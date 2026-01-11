@@ -192,13 +192,19 @@ npm install
 Buat file `.env` di folder `frontend/` dengan isi:
 
 ```env
+# Firebase Configuration
 VITE_FIREBASE_API_KEY=your_api_key
 VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
 VITE_FIREBASE_PROJECT_ID=your_project_id
 VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
+
+# Backend API Configuration
+VITE_API_BASE_URL=http://localhost:3000/api
 ```
+
+> **Note:** Semua API endpoint sekarang menggunakan `VITE_API_BASE_URL` dari environment variable. Untuk development lokal, gunakan `http://localhost:3000/api`. Untuk production, ubah ke URL backend production Anda.
 
 3. **Menjalankan development server:**
 

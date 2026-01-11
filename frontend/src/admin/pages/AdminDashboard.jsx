@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Package, Users, ShoppingCart, TrendingUp } from "lucide-react";
-import { db } from "../../firebase/config";
-import { collection, getDocs } from "firebase/firestore";
 import { Link } from "react-router-dom";
 
 const AdminDashboard = () => {
@@ -16,32 +14,34 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Fetch products count
-        const productsSnapshot = await getDocs(collection(db, "products"));
-        const totalProducts = productsSnapshot.size;
+        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-        // Fetch users count
-        const usersSnapshot = await getDocs(collection(db, "users"));
-        const totalUsers = usersSnapshot.size;
+        // Fetch products count dari API
+        const productsResponse = await fetch(`${API_BASE_URL}/products`);
+        console.log("Products Response:", productsResponse);
+        const productsData = await productsResponse.json();
+        const totalProducts = productsData.length;
 
-        // Fetch orders count dan revenue
-        const ordersSnapshot = await getDocs(collection(db, "orders"));
-        const totalOrders = ordersSnapshot.size;
+        // Fetch users count dari API
+        const usersResponse = await fetch(`${API_BASE_URL}/users`);
+        const usersData = await usersResponse.json();
+        const totalUsers = usersData.length;
+
+        // Fetch orders count dan revenue dari API
+        const ordersResponse = await fetch(`${API_BASE_URL}/orders`);
+        const ordersData = await ordersResponse.json();
+        const totalOrders = ordersData.length;
 
         // Hitung revenue dari orders yang accepted
-        let revenue = 0;
-        ordersSnapshot.forEach((doc) => {
-          const data = doc.data();
-          if (data.status === "accepted") {
-            revenue += data.total || 0;
-          }
-        });
+        const revenue = ordersData
+          .filter((order) => order.status === "accepted")
+          .reduce((sum, order) => sum + (order.total || 0), 0);
 
         console.log("📊 Dashboard Stats:", {
           totalProducts,
           totalUsers,
           totalOrders,
-          revenue
+          revenue,
         });
 
         setStats({

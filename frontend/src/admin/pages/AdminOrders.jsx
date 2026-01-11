@@ -106,7 +106,9 @@ const AdminOrders = () => {
         // Konfirmasi stok - stok tetap berkurang
         console.log(`🔒 Confirming stock for order ${orderId}`);
         const confirmResponse = await fetch(
-          `https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/orders/${orderId}/confirm-stock`,
+          `${
+            import.meta.env.VITE_API_BASE_URL
+          }/orders/${orderId}/confirm-stock`,
           {
             method: "POST",
           }
@@ -124,7 +126,7 @@ const AdminOrders = () => {
         // Kembalikan stok - stok dikembalikan
         console.log(`🔄 Returning stock for order ${orderId}`);
         const returnResponse = await fetch(
-          `https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/orders/${orderId}/return-stock`,
+          `${import.meta.env.VITE_API_BASE_URL}/orders/${orderId}/return-stock`,
           {
             method: "POST",
           }
@@ -219,7 +221,9 @@ const AdminOrders = () => {
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="text-center">
           <div className="animate-spin rounded-full h-10 w-10 md:h-12 md:w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-3 md:mt-4 text-gray-600 text-sm md:text-base">Memuat pesanan...</p>
+          <p className="mt-3 md:mt-4 text-gray-600 text-sm md:text-base">
+            Memuat pesanan...
+          </p>
         </div>
       </div>
     );
@@ -234,7 +238,8 @@ const AdminOrders = () => {
             Kelola Pesanan
           </h1>
           <p className="text-xs sm:text-sm md:text-base text-gray-600">
-            Kelola pesanan dan stok akan otomatis disesuaikan saat menerima/menolak pesanan
+            Kelola pesanan dan stok akan otomatis disesuaikan saat
+            menerima/menolak pesanan
           </p>
         </div>
 
@@ -261,26 +266,28 @@ const AdminOrders = () => {
             <button
               key={status}
               onClick={() => setSelectedStatus(status)}
-              className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-medium transition-all flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${selectedStatus === status
-                ? "bg-indigo-600 text-white shadow-lg"
-                : "bg-white text-gray-700 hover:bg-gray-50 shadow-sm"
-                }`}
+              className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-medium transition-all flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${
+                selectedStatus === status
+                  ? "bg-indigo-600 text-white shadow-lg"
+                  : "bg-white text-gray-700 hover:bg-gray-50 shadow-sm"
+              }`}
             >
               {getStatusIcon(status)}
               {status === "all"
                 ? "Semua"
                 : status === "pending"
-                  ? "Menunggu"
-                  : status === "accepted"
-                    ? "Diterima"
-                    : "Ditolak"}
+                ? "Menunggu"
+                : status === "accepted"
+                ? "Diterima"
+                : "Ditolak"}
             </button>
           ))}
         </div>
 
         {searchTerm && (
           <p className="text-xs sm:text-sm text-gray-600 mb-3 md:mb-4">
-            Menampilkan <span className="font-semibold">{filteredOrders.length}</span> hasil
+            Menampilkan{" "}
+            <span className="font-semibold">{filteredOrders.length}</span> hasil
             untuk "{searchTerm}"
           </p>
         )}
@@ -296,8 +303,9 @@ const AdminOrders = () => {
             <p className="text-xs sm:text-sm md:text-base text-gray-500 px-4">
               {selectedStatus === "all"
                 ? "Pesanan dari pelanggan akan muncul di sini"
-                : `Tidak ada pesanan dengan status ${selectedStatus === "pending" ? "menunggu" : selectedStatus
-                }`}
+                : `Tidak ada pesanan dengan status ${
+                    selectedStatus === "pending" ? "menunggu" : selectedStatus
+                  }`}
             </p>
           </div>
         ) : (
@@ -321,8 +329,8 @@ const AdminOrders = () => {
                           {order.status === "pending"
                             ? "Menunggu Konfirmasi"
                             : order.status === "accepted"
-                              ? "Pesanan Diterima"
-                              : "Pesanan Ditolak"}
+                            ? "Pesanan Diterima"
+                            : "Pesanan Ditolak"}
                         </span>
                         <span className="text-xs text-gray-500 font-mono">
                           #{order.id}
@@ -336,7 +344,8 @@ const AdminOrders = () => {
                         <div className="flex items-center gap-1 sm:gap-2 text-gray-600">
                           <User className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                           <span className="text-xs sm:text-sm truncate">
-                            User: {users[order.userId]?.name || "Tidak diketahui"}
+                            User:{" "}
+                            {users[order.userId]?.name || "Tidak diketahui"}
                           </span>
                         </div>
                         <div className="flex items-center gap-1 sm:gap-2 text-gray-600">
@@ -362,10 +371,11 @@ const AdminOrders = () => {
                               handleStatusChange(order.id, "accepted")
                             }
                             disabled={processingOrder === order.id}
-                            className={`flex items-center justify-center gap-1 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transition-all shadow-sm hover:shadow-md text-xs sm:text-sm w-full sm:w-auto ${processingOrder === order.id
-                              ? "bg-gray-400 text-white cursor-not-allowed"
-                              : "bg-green-500 text-white hover:bg-green-600"
-                              }`}
+                            className={`flex items-center justify-center gap-1 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transition-all shadow-sm hover:shadow-md text-xs sm:text-sm w-full sm:w-auto ${
+                              processingOrder === order.id
+                                ? "bg-gray-400 text-white cursor-not-allowed"
+                                : "bg-green-500 text-white hover:bg-green-600"
+                            }`}
                           >
                             {processingOrder === order.id ? (
                               <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white"></div>
@@ -381,10 +391,11 @@ const AdminOrders = () => {
                               handleStatusChange(order.id, "rejected")
                             }
                             disabled={processingOrder === order.id}
-                            className={`flex items-center justify-center gap-1 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transition-all shadow-sm hover:shadow-md text-xs sm:text-sm w-full sm:w-auto ${processingOrder === order.id
-                              ? "bg-gray-400 text-white cursor-not-allowed"
-                              : "bg-red-500 text-white hover:bg-red-600"
-                              }`}
+                            className={`flex items-center justify-center gap-1 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transition-all shadow-sm hover:shadow-md text-xs sm:text-sm w-full sm:w-auto ${
+                              processingOrder === order.id
+                                ? "bg-gray-400 text-white cursor-not-allowed"
+                                : "bg-red-500 text-white hover:bg-red-600"
+                            }`}
                           >
                             {processingOrder === order.id ? (
                               <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white"></div>
@@ -399,10 +410,11 @@ const AdminOrders = () => {
                       ) : (
                         // Untuk status accepted atau rejected, tampilkan indikator saja
                         <div
-                          className={`flex items-center gap-1 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border text-xs sm:text-sm ${order.status === "accepted"
-                            ? "bg-green-100 text-green-700 border-green-200"
-                            : "bg-red-100 text-red-700 border-red-200"
-                            }`}
+                          className={`flex items-center gap-1 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border text-xs sm:text-sm ${
+                            order.status === "accepted"
+                              ? "bg-green-100 text-green-700 border-green-200"
+                              : "bg-red-100 text-red-700 border-red-200"
+                          }`}
                         >
                           {getStatusIcon(order.status)}
                           {order.status === "accepted"
@@ -479,7 +491,9 @@ const AdminOrders = () => {
               <div className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">
                 {orders.length}
               </div>
-              <div className="text-xs sm:text-sm text-gray-600">Total Pesanan</div>
+              <div className="text-xs sm:text-sm text-gray-600">
+                Total Pesanan
+              </div>
             </div>
             <div className="bg-white rounded-lg md:rounded-xl p-3 md:p-4 shadow-sm border border-gray-100">
               <div className="text-lg sm:text-xl md:text-2xl font-bold text-yellow-600">

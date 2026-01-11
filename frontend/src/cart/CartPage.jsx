@@ -136,20 +136,17 @@ const CartPage = () => {
 
       const total = calculateTotal();
 
-      const res = await fetch(
-        "https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/orders",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId,
-            items: orderItems,
-            total,
-          }),
-        }
-      );
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/orders`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId,
+          items: orderItems,
+          total,
+        }),
+      });
 
       const responseData = await res.json();
 
@@ -204,7 +201,9 @@ const CartPage = () => {
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 flex items-center justify-center px-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"></div>
-          <p className="text-white text-base sm:text-lg mt-4">Memuat keranjang...</p>
+          <p className="text-white text-base sm:text-lg mt-4">
+            Memuat keranjang...
+          </p>
         </div>
       </div>
     );
@@ -263,7 +262,10 @@ const CartPage = () => {
         <div className="max-w-2xl mx-auto text-center py-8 sm:py-12 md:py-16 px-4">
           <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-6 sm:p-8 md:p-12 border border-white/20">
             <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 mx-auto mb-4 sm:mb-6 bg-white/10 rounded-full flex items-center justify-center">
-              <ShoppingCart size={24} className="sm:size-8 md:size-10 text-gray-400" />
+              <ShoppingCart
+                size={24}
+                className="sm:size-8 md:size-10 text-gray-400"
+              />
             </div>
             <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-3 sm:mb-4">
               Keranjang Kosong
@@ -392,7 +394,9 @@ const CartPage = () => {
               <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20 shadow-lg sticky bottom-0 z-10">
                 <div className="flex justify-between items-center mb-4">
                   <div>
-                    <p className="text-sm text-gray-300">Total ({getTotalItems()} item)</p>
+                    <p className="text-sm text-gray-300">
+                      Total ({getTotalItems()} item)
+                    </p>
                     <p className="text-xl font-bold text-white">
                       Rp {calculateTotal().toLocaleString("id-ID")}
                     </p>

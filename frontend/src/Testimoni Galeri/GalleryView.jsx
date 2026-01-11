@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { ArrowLeft, Search, Filter, Grid, List, ZoomIn, ChevronDown, X } from "lucide-react";
+import {
+  ArrowLeft,
+  Search,
+  Filter,
+  Grid,
+  List,
+  ZoomIn,
+  ChevronDown,
+  X,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 
 const GalleryView = () => {
@@ -17,12 +26,16 @@ const GalleryView = () => {
     const fetchGalleryData = async () => {
       try {
         setLoading(true);
-        const response = await fetch("https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/gallery");
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/gallery`
+        );
 
         if (response.ok) {
           const galleryData = await response.json();
           // Filter hanya gambar yang aktif
-          const activeImages = galleryData.filter(image => image.active !== false);
+          const activeImages = galleryData.filter(
+            (image) => image.active !== false
+          );
           setGalleryImages(activeImages);
         }
       } catch (error) {
@@ -38,7 +51,10 @@ const GalleryView = () => {
   // Close dropdown ketika klik outside
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (sortDropdownRef.current && !sortDropdownRef.current.contains(e.target)) {
+      if (
+        sortDropdownRef.current &&
+        !sortDropdownRef.current.contains(e.target)
+      ) {
         setSortDropdownOpen(false);
       }
     };
@@ -48,23 +64,26 @@ const GalleryView = () => {
 
   // Filter dan sort images
   const filteredAndSortedImages = useMemo(() => {
-    let result = galleryImages.filter(image =>
-      image.alt_text?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      image.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    let result = galleryImages.filter(
+      (image) =>
+        image.alt_text?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        image.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     // Sort berdasarkan pilihan
     switch (sortBy) {
       case "newest":
-        result = [...result].sort((a, b) =>
-          new Date(b.createdAt?.toDate?.() || b.createdAt) -
-          new Date(a.createdAt?.toDate?.() || a.createdAt)
+        result = [...result].sort(
+          (a, b) =>
+            new Date(b.createdAt?.toDate?.() || b.createdAt) -
+            new Date(a.createdAt?.toDate?.() || a.createdAt)
         );
         break;
       case "oldest":
-        result = [...result].sort((a, b) =>
-          new Date(a.createdAt?.toDate?.() || a.createdAt) -
-          new Date(b.createdAt?.toDate?.() || b.createdAt)
+        result = [...result].sort(
+          (a, b) =>
+            new Date(a.createdAt?.toDate?.() || a.createdAt) -
+            new Date(b.createdAt?.toDate?.() || b.createdAt)
         );
         break;
       case "name":
@@ -83,14 +102,14 @@ const GalleryView = () => {
   const openImageModal = (image) => {
     setSelectedImage(image);
     // Prevent body scroll when modal is open
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
   };
 
   // Close image modal
   const closeImageModal = () => {
     setSelectedImage(null);
     // Restore body scroll
-    document.body.style.overflow = 'auto';
+    document.body.style.overflow = "auto";
   };
 
   // Clear filters
@@ -102,10 +121,14 @@ const GalleryView = () => {
   // Get sort label
   const getSortLabel = () => {
     switch (sortBy) {
-      case "newest": return "Terbaru";
-      case "oldest": return "Terlama";
-      case "name": return "Nama A-Z";
-      default: return "Urutkan";
+      case "newest":
+        return "Terbaru";
+      case "oldest":
+        return "Terlama";
+      case "name":
+        return "Nama A-Z";
+      default:
+        return "Urutkan";
     }
   };
 
@@ -137,7 +160,9 @@ const GalleryView = () => {
           </h1>
           <div className="w-10"></div> {/* Spacer untuk balance */}
         </div>
-        <p className="text-center text-gray-300 text-sm">Koleksi foto toko, produk, dan aktivitas kami</p>
+        <p className="text-center text-gray-300 text-sm">
+          Koleksi foto toko, produk, dan aktivitas kami
+        </p>
       </div>
 
       {/* Desktop Header */}
@@ -159,7 +184,9 @@ const GalleryView = () => {
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-1 sm:mb-2 bg-gradient-to-r from-pink-400 to-indigo-400 bg-clip-text text-transparent">
               Gallery Berkat Jaya Motor
             </h1>
-            <p className="text-gray-300 text-sm sm:text-base">Koleksi foto toko, produk, dan aktivitas kami</p>
+            <p className="text-gray-300 text-sm sm:text-base">
+              Koleksi foto toko, produk, dan aktivitas kami
+            </p>
           </div>
 
           {/* Spacer kanan */}
@@ -173,7 +200,10 @@ const GalleryView = () => {
           {/* Search Box - Full width di mobile */}
           <div className="mb-4 sm:mb-0">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+              <Search
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                size={18}
+              />
               <input
                 type="text"
                 placeholder="Cari gambar..."
@@ -191,20 +221,22 @@ const GalleryView = () => {
               <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-lg p-1">
                 <button
                   onClick={() => setViewMode("grid")}
-                  className={`p-1.5 sm:p-2 rounded transition ${viewMode === "grid"
-                    ? "bg-pink-500 text-white"
-                    : "text-gray-400 hover:text-white"
-                    }`}
+                  className={`p-1.5 sm:p-2 rounded transition ${
+                    viewMode === "grid"
+                      ? "bg-pink-500 text-white"
+                      : "text-gray-400 hover:text-white"
+                  }`}
                   title="Grid View"
                 >
                   <Grid size={18} />
                 </button>
                 <button
                   onClick={() => setViewMode("list")}
-                  className={`p-1.5 sm:p-2 rounded transition ${viewMode === "list"
-                    ? "bg-pink-500 text-white"
-                    : "text-gray-400 hover:text-white"
-                    }`}
+                  className={`p-1.5 sm:p-2 rounded transition ${
+                    viewMode === "list"
+                      ? "bg-pink-500 text-white"
+                      : "text-gray-400 hover:text-white"
+                  }`}
                   title="List View"
                 >
                   <List size={18} />
@@ -235,11 +267,19 @@ const GalleryView = () => {
                 </div>
                 <ChevronDown
                   size={14}
-                  className={`transition-transform duration-300 ${sortDropdownOpen ? "rotate-180" : ""}`}
+                  className={`transition-transform duration-300 ${
+                    sortDropdownOpen ? "rotate-180" : ""
+                  }`}
                 />
               </button>
 
-              <div className={`absolute top-full left-0 right-0 mt-1 sm:mt-2 bg-gray-800 border border-white/10 rounded-lg sm:rounded-xl shadow-2xl transition-all duration-300 z-[9999] ${sortDropdownOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}>
+              <div
+                className={`absolute top-full left-0 right-0 mt-1 sm:mt-2 bg-gray-800 border border-white/10 rounded-lg sm:rounded-xl shadow-2xl transition-all duration-300 z-[9999] ${
+                  sortDropdownOpen
+                    ? "opacity-100 visible"
+                    : "opacity-0 invisible"
+                }`}
+              >
                 <div className="p-1 sm:p-2">
                   <div
                     className="px-3 py-2 rounded hover:bg-white/10 cursor-pointer transition-colors text-white flex items-center justify-between text-sm sm:text-base"
@@ -296,7 +336,11 @@ const GalleryView = () => {
           {/* Results Count */}
           <div className="mt-3 sm:mt-4">
             <p className="text-xs sm:text-sm text-gray-300">
-              Menampilkan <span className="text-white font-semibold">{filteredAndSortedImages.length}</span> gambar
+              Menampilkan{" "}
+              <span className="text-white font-semibold">
+                {filteredAndSortedImages.length}
+              </span>{" "}
+              gambar
               {searchTerm && ` untuk "${searchTerm}"`}
             </p>
           </div>
@@ -321,7 +365,8 @@ const GalleryView = () => {
                       alt={image.alt_text}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       onError={(e) => {
-                        e.target.src = "https://via.placeholder.com/400x400/4f46e5/ffffff?text=Image";
+                        e.target.src =
+                          "https://via.placeholder.com/400x400/4f46e5/ffffff?text=Image";
                       }}
                       loading="lazy"
                     />
@@ -364,7 +409,8 @@ const GalleryView = () => {
                       alt={image.alt_text}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       onError={(e) => {
-                        e.target.src = "https://via.placeholder.com/80x80/4f46e5/ffffff?text=Image";
+                        e.target.src =
+                          "https://via.placeholder.com/80x80/4f46e5/ffffff?text=Image";
                       }}
                       loading="lazy"
                     />
@@ -382,7 +428,9 @@ const GalleryView = () => {
                     )}
                     <div className="mt-1">
                       <span className="text-xs text-gray-400">
-                        {new Date(image.createdAt?.toDate?.() || image.createdAt).toLocaleDateString('id-ID')}
+                        {new Date(
+                          image.createdAt?.toDate?.() || image.createdAt
+                        ).toLocaleDateString("id-ID")}
                       </span>
                     </div>
                   </div>
@@ -403,7 +451,10 @@ const GalleryView = () => {
         <div className="max-w-2xl mx-auto text-center py-8 sm:py-12 md:py-16 px-4 relative z-0">
           <div className="bg-white/5 backdrop-blur-lg rounded-xl sm:rounded-2xl p-6 sm:p-8 md:p-12 border border-white/10">
             <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 mx-auto mb-4 sm:mb-6 bg-white/10 rounded-full flex items-center justify-center">
-              <Search size={24} className="sm:size-8 md:size-10 text-gray-400" />
+              <Search
+                size={24}
+                className="sm:size-8 md:size-10 text-gray-400"
+              />
             </div>
             <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-2">
               {searchTerm ? "Gambar Tidak Ditemukan" : "Belum Ada Gallery"}
@@ -411,8 +462,7 @@ const GalleryView = () => {
             <p className="text-gray-400 text-sm sm:text-base mb-4 sm:mb-6">
               {searchTerm
                 ? `Tidak ada gambar yang sesuai dengan pencarian "${searchTerm}"`
-                : "Gallery akan muncul setelah admin menambahkan gambar melalui dashboard."
-              }
+                : "Gallery akan muncul setelah admin menambahkan gambar melalui dashboard."}
             </p>
             {searchTerm && (
               <button
@@ -459,10 +509,15 @@ const GalleryView = () => {
                 {selectedImage.alt_text || "Gambar Gallery"}
               </h3>
               {selectedImage.description && (
-                <p className="text-gray-300 text-sm sm:text-base mb-3 sm:mb-4">{selectedImage.description}</p>
+                <p className="text-gray-300 text-sm sm:text-base mb-3 sm:mb-4">
+                  {selectedImage.description}
+                </p>
               )}
               <div className="text-xs sm:text-sm text-gray-400">
-                Ditambahkan pada {new Date(selectedImage.createdAt?.toDate?.() || selectedImage.createdAt).toLocaleDateString('id-ID')}
+                Ditambahkan pada{" "}
+                {new Date(
+                  selectedImage.createdAt?.toDate?.() || selectedImage.createdAt
+                ).toLocaleDateString("id-ID")}
               </div>
             </div>
           </div>

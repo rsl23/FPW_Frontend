@@ -22,7 +22,7 @@ const AboutUs = () => {
         setLoading(true);
         // Fetch dari Express server gallery endpoint
         const galleryResponse = await fetch(
-          "https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/gallery"
+          `${import.meta.env.VITE_API_BASE_URL}/gallery`
         );
 
         if (galleryResponse.ok) {

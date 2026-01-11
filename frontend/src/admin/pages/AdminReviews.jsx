@@ -36,14 +36,14 @@ const AdminReviews = () => {
     try {
       setLoading(true);
       const response = await fetch(
-        "https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/reviews"
+        `${import.meta.env.VITE_API_BASE_URL}/reviews`
       );
       if (response.ok) {
         const reviewsData = await response.json();
 
         // Fetch products untuk semua reviews (hanya sekali)
         const productsResponse = await fetch(
-          `https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/products`
+          `${import.meta.env.VITE_API_BASE_URL}/products`
         );
         const productsData = productsResponse.ok
           ? await productsResponse.json()
@@ -80,7 +80,7 @@ const AdminReviews = () => {
   const fetchProducts = async () => {
     try {
       const response = await fetch(
-        "https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/products"
+        `${import.meta.env.VITE_API_BASE_URL}/products`
       );
       if (response.ok) {
         const data = await response.json();
@@ -135,7 +135,7 @@ const AdminReviews = () => {
 
       // SEND QUERY PARAMETERS, bukan Authorization header
       const url = new URL(
-        `https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/reviews/${reviewToDelete.id}`
+        `${import.meta.env.VITE_API_BASE_URL}/reviews/${reviewToDelete.id}`
       );
 
       // Tambahkan query parameters seperti yang diharapkan backend

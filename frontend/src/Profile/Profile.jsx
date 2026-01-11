@@ -210,7 +210,7 @@ const Profile = () => {
   const fetchUserReviews = async (userId) => {
     try {
       const response = await fetch(
-        `https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/reviews?userId=${userId}`
+        `${import.meta.env.VITE_API_BASE_URL}/reviews?userId=${userId}`
       );
       if (response.ok) {
         const userReviews = await response.json();
@@ -240,7 +240,7 @@ const Profile = () => {
       console.log("📦 Order ID in payload:", payload.order_id);
 
       const response = await fetch(
-        "https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/reviews",
+        `${import.meta.env.VITE_API_BASE_URL}/reviews`,
         {
           method: "POST",
           headers: {

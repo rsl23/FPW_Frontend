@@ -85,7 +85,7 @@ const GalleryPage = () => {
     try {
       setLoading(true);
       const response = await fetch(
-        "https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/gallery"
+        `${import.meta.env.VITE_API_BASE_URL}/gallery`
       );
 
       if (response.ok) {
@@ -162,7 +162,7 @@ const GalleryPage = () => {
       };
 
       const response = await fetch(
-        "https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/gallery",
+        `${import.meta.env.VITE_API_BASE_URL}/gallery`,
         {
           method: "POST",
           headers: {
@@ -209,7 +209,7 @@ const GalleryPage = () => {
       async () => {
         try {
           const response = await fetch(
-            `https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/gallery/${id}`,
+            `${import.meta.env.VITE_API_BASE_URL}/gallery/${id}`,
             {
               method: "DELETE",
             }
@@ -235,7 +235,7 @@ const GalleryPage = () => {
       // console.log(!currentActive);
 
       const response = await fetch(
-        `https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/gallery/${id}`,
+        `${import.meta.env.VITE_API_BASE_URL}/gallery/${id}`,
         {
           method: "PUT",
           headers: {

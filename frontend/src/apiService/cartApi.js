@@ -3,7 +3,7 @@
 
 import { auth } from "../firebase/config";
 
-const API_URL = "https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/cart";
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/cart`;
 
 // Helper function untuk mendapatkan user yang sedang login
 const getCurrentUser = () => {

@@ -1,7 +1,7 @@
 // API Service untuk Review endpoints
 // Handle operasi reviews produk (submit, get user reviews, get product reviews)
 
-const API_BASE_URL = "https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Mengirim review baru untuk produk
 // @param reviewData - Object dengan userId, produk_id, rating (1-5), dan review_text

@@ -48,7 +48,7 @@ const ProductDetail = () => {
     try {
       setReviewsLoading(true);
       const response = await fetch(
-        `https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/reviews/product/${productId}`
+        `${import.meta.env.VITE_API_BASE_URL}/reviews/product/${productId}`
       );
       if (response.ok) {
         const data = await response.json();
@@ -125,7 +125,9 @@ const ProductDetail = () => {
           getCategories(),
         ]);
 
-        const selected = productsData.find((p) => p.id.toString() === id);
+        console.log(productsData);
+
+        const selected = productsData.find((p) => p._id === id);
 
         if (!selected) {
           navigate("/product");
@@ -332,15 +334,17 @@ const ProductDetail = () => {
           <div className="flex justify-center">
             <div className="relative group w-full">
               <div
-                className={`absolute inset-0 bg-gradient-to-br from-pink-500/20 to-indigo-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500 ${imageLoaded ? "opacity-100" : "opacity-0"
-                  }`}
+                className={`absolute inset-0 bg-gradient-to-br from-pink-500/20 to-indigo-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500 ${
+                  imageLoaded ? "opacity-100" : "opacity-0"
+                }`}
               ></div>
               <div className="relative bg-white/5 backdrop-blur-lg border border-white/20 rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl w-full">
                 <img
                   src={product.img_url || "/placeholder-image.jpg"}
                   alt={product.nama}
-                  className={`w-full h-auto max-h-[300px] sm:max-h-[400px] md:max-h-[500px] object-contain rounded-2xl transition-all duration-500 ${imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
-                    } group-hover:scale-105`}
+                  className={`w-full h-auto max-h-[300px] sm:max-h-[400px] md:max-h-[500px] object-contain rounded-2xl transition-all duration-500 ${
+                    imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
+                  } group-hover:scale-105`}
                   onLoad={() => setImageLoaded(true)}
                   onError={(e) => {
                     e.target.src = "/placeholder-image.jpg";
@@ -400,8 +404,12 @@ const ProductDetail = () => {
                     <Package size={18} className="text-indigo-400" />
                   </div>
                   <div>
-                    <p className="text-gray-400 text-xs md:text-sm">Stok Tersedia</p>
-                    <p className={`text-base md:text-lg font-semibold ${stockInfo.color}`}>
+                    <p className="text-gray-400 text-xs md:text-sm">
+                      Stok Tersedia
+                    </p>
+                    <p
+                      className={`text-base md:text-lg font-semibold ${stockInfo.color}`}
+                    >
                       {product.stok} unit
                     </p>
                   </div>
@@ -445,10 +453,11 @@ const ProductDetail = () => {
               <button
                 onClick={handleAddToCart}
                 disabled={product.stok === 0}
-                className={`w-full px-4 py-3 md:px-8 md:py-4 rounded-xl md:rounded-2xl font-semibold text-white transition-all duration-300 flex items-center justify-center gap-2 md:gap-3 text-base md:text-lg ${product.stok === 0
-                  ? "bg-gray-600 cursor-not-allowed opacity-50"
-                  : "bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 hover:shadow-xl md:hover:shadow-2xl hover:scale-[1.02] md:hover:scale-105"
-                  }`}
+                className={`w-full px-4 py-3 md:px-8 md:py-4 rounded-xl md:rounded-2xl font-semibold text-white transition-all duration-300 flex items-center justify-center gap-2 md:gap-3 text-base md:text-lg ${
+                  product.stok === 0
+                    ? "bg-gray-600 cursor-not-allowed opacity-50"
+                    : "bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 hover:shadow-xl md:hover:shadow-2xl hover:scale-[1.02] md:hover:scale-105"
+                }`}
               >
                 <ShoppingCart size={20} />
                 {product.stok === 0 ? "Stok Habis" : "Tambah ke Keranjang"}
@@ -568,11 +577,14 @@ const ProductDetail = () => {
                   className="flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-white/10 border border-white/20 rounded-lg text-white hover:bg-white/20 transition-colors text-xs md:text-sm"
                 >
                   <Filter size={14} />
-                  <span className="truncate max-w-[120px] md:max-w-none">{getRatingFilterLabel()}</span>
+                  <span className="truncate max-w-[120px] md:max-w-none">
+                    {getRatingFilterLabel()}
+                  </span>
                   <ChevronDown
                     size={14}
-                    className={`transition-transform ${filterDropdownOpen ? "rotate-180" : ""
-                      }`}
+                    className={`transition-transform ${
+                      filterDropdownOpen ? "rotate-180" : ""
+                    }`}
                   />
                 </button>
 
@@ -589,10 +601,11 @@ const ProductDetail = () => {
                             setRatingFilter("all");
                             setFilterDropdownOpen(false);
                           }}
-                          className={`w-full text-left px-2 py-1.5 md:px-3 md:py-2 rounded text-xs md:text-sm transition-colors ${ratingFilter === "all"
-                            ? "bg-indigo-600 text-white"
-                            : "text-gray-300 hover:bg-white/10"
-                            }`}
+                          className={`w-full text-left px-2 py-1.5 md:px-3 md:py-2 rounded text-xs md:text-sm transition-colors ${
+                            ratingFilter === "all"
+                              ? "bg-indigo-600 text-white"
+                              : "text-gray-300 hover:bg-white/10"
+                          }`}
                         >
                           Semua Rating ({totalReviews})
                         </button>
@@ -603,10 +616,11 @@ const ProductDetail = () => {
                               setRatingFilter(rating.toString());
                               setFilterDropdownOpen(false);
                             }}
-                            className={`w-full text-left px-2 py-1.5 md:px-3 md:py-2 rounded text-xs md:text-sm transition-colors flex items-center justify-between ${ratingFilter === rating.toString()
-                              ? "bg-indigo-600 text-white"
-                              : "text-gray-300 hover:bg-white/10"
-                              }`}
+                            className={`w-full text-left px-2 py-1.5 md:px-3 md:py-2 rounded text-xs md:text-sm transition-colors flex items-center justify-between ${
+                              ratingFilter === rating.toString()
+                                ? "bg-indigo-600 text-white"
+                                : "text-gray-300 hover:bg-white/10"
+                            }`}
                           >
                             <div className="flex items-center gap-1 md:gap-2">
                               <div className="flex items-center gap-0.5 md:gap-1">
@@ -641,7 +655,9 @@ const ProductDetail = () => {
           {reviewsLoading ? (
             <div className="text-center py-6 md:py-8 border border-white/10 rounded-lg bg-white/5">
               <Spinner size="lg" color="pink" />
-              <p className="text-gray-300 mt-2 text-xs md:text-sm">Memuat ulasan...</p>
+              <p className="text-gray-300 mt-2 text-xs md:text-sm">
+                Memuat ulasan...
+              </p>
             </div>
           ) : reviews.length === 0 ? (
             <div className="text-center py-8 md:py-12 border border-white/10 rounded-lg bg-white/5">

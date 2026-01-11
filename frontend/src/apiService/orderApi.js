@@ -15,7 +15,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase/config";
 
-const API_URL = "https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/orders";
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/orders`;
 
 // Mengambil semua orders milik user tertentu
 // @param userId - ID user dari Firebase Auth

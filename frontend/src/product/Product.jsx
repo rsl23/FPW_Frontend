@@ -28,7 +28,7 @@ const Product = () => {
   const fetchProductReviews = async (productId) => {
     try {
       const response = await fetch(
-        `https://backend-dot-storied-courier-479504-q5.et.r.appspot.com/api/reviews/product/${productId}`
+        `${import.meta.env.VITE_API_BASE_URL}/reviews/product/${productId}`
       );
       if (response.ok) {
         const data = await response.json();
@@ -219,7 +219,9 @@ const Product = () => {
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 flex items-center justify-center px-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"></div>
-          <p className="text-white text-base sm:text-lg mt-4">Memuat produk...</p>
+          <p className="text-white text-base sm:text-lg mt-4">
+            Memuat produk...
+          </p>
         </div>
       </div>
     );
@@ -283,22 +285,24 @@ const Product = () => {
                     {selectedCategory === "Semua"
                       ? "Semua Kategori"
                       : selectedCategory.length > 15
-                        ? selectedCategory.substring(0, 12) + "..."
-                        : selectedCategory}
+                      ? selectedCategory.substring(0, 12) + "..."
+                      : selectedCategory}
                   </span>
                 </div>
                 <ChevronDown
                   size={14}
-                  className={`transition-transform duration-300 ${categoryDropdownOpen ? "rotate-180" : ""
-                    }`}
+                  className={`transition-transform duration-300 ${
+                    categoryDropdownOpen ? "rotate-180" : ""
+                  }`}
                 />
               </button>
 
               <div
-                className={`absolute top-full left-0 right-0 mt-1 sm:mt-2 bg-gray-800 border border-white/10 rounded-lg sm:rounded-xl shadow-lg transition-all duration-300 z-[9999] max-h-60 overflow-y-auto ${categoryDropdownOpen
-                  ? "opacity-100 visible"
-                  : "opacity-0 invisible"
-                  }`}
+                className={`absolute top-full left-0 right-0 mt-1 sm:mt-2 bg-gray-800 border border-white/10 rounded-lg sm:rounded-xl shadow-lg transition-all duration-300 z-[9999] max-h-60 overflow-y-auto ${
+                  categoryDropdownOpen
+                    ? "opacity-100 visible"
+                    : "opacity-0 invisible"
+                }`}
               >
                 <div className="p-1 sm:p-2">
                   <div
@@ -343,16 +347,18 @@ const Product = () => {
                 </div>
                 <ChevronDown
                   size={14}
-                  className={`transition-transform duration-300 ${sortDropdownOpen ? "rotate-180" : ""
-                    }`}
+                  className={`transition-transform duration-300 ${
+                    sortDropdownOpen ? "rotate-180" : ""
+                  }`}
                 />
               </button>
 
               <div
-                className={`absolute top-full left-0 right-0 mt-1 sm:mt-2 bg-gray-800 border border-white/10 rounded-lg sm:rounded-xl shadow-lg transition-all duration-300 z-[9999] ${sortDropdownOpen
-                  ? "opacity-100 visible"
-                  : "opacity-0 invisible"
-                  }`}
+                className={`absolute top-full left-0 right-0 mt-1 sm:mt-2 bg-gray-800 border border-white/10 rounded-lg sm:rounded-xl shadow-lg transition-all duration-300 z-[9999] ${
+                  sortDropdownOpen
+                    ? "opacity-100 visible"
+                    : "opacity-0 invisible"
+                }`}
               >
                 <div className="p-1 sm:p-2">
                   <div
@@ -420,7 +426,9 @@ const Product = () => {
             </div>
 
             {/* Clear Filters Button */}
-            {(searchTerm || selectedCategory !== "Semua" || sortBy !== "default") && (
+            {(searchTerm ||
+              selectedCategory !== "Semua" ||
+              sortBy !== "default") && (
               <button
                 onClick={clearFilters}
                 className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-500/20 border border-red-500/30 text-red-300 rounded-lg sm:rounded-xl hover:bg-red-500/30 transition-colors text-sm sm:text-base whitespace-nowrap"
@@ -468,11 +476,15 @@ const Product = () => {
                   <div className="relative overflow-hidden aspect-square">
                     <img
                       className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      src={p.img_url || "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop"}
+                      src={
+                        p.img_url ||
+                        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop"
+                      }
                       alt={p.nama}
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop";
+                        e.target.src =
+                          "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop";
                       }}
                       loading="lazy"
                     />
@@ -541,14 +553,18 @@ const Product = () => {
                     {/* Bottom Section */}
                     <div className="mt-auto pt-2 sm:pt-3 border-t border-gray-700/50">
                       <div className="flex items-center justify-between">
-                        <div className={`text-[10px] sm:text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 rounded ${stockStatus.bg}`}>
+                        <div
+                          className={`text-[10px] sm:text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 rounded ${stockStatus.bg}`}
+                        >
                           <span className={`font-medium ${stockStatus.color}`}>
                             Stok: {p.stok}
                           </span>
                         </div>
                         <div className="flex items-center gap-0.5 sm:gap-1 text-gray-400 group-hover:text-pink-400 transition-colors">
                           <ShoppingCart size={10} className="sm:size-3" />
-                          <span className="text-[10px] sm:text-xs font-medium">Beli</span>
+                          <span className="text-[10px] sm:text-xs font-medium">
+                            Beli
+                          </span>
                         </div>
                       </div>
                     </div>
