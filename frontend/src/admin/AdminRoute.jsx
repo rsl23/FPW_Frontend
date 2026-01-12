@@ -1,42 +1,14 @@
 // AdminRoute Component - Protected route untuk admin panel dengan role-based access control
-// Validasi: user harus login DAN memiliki role 'admin' di Firestore
+// Validasi: user harus login DAN memiliki role 'admin' dari backend API
 // Redirect ke login jika belum auth, tampilkan error jika bukan admin
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Navigate } from "react-router-dom";
-import { auth, db } from "../firebase/config";
-import { doc, getDoc } from "firebase/firestore";
+import { useAuthStore } from "../store/authStore"; // Zustand store
 
 const AdminRoute = ({ children }) => {
-  const [loading, setLoading] = useState(true); // Loading state saat check role
-  const [isAdmin, setIsAdmin] = useState(false); // Admin role flag
-  const user = auth.currentUser;
-
-  // Check admin role dari Firestore user document
-  useEffect(() => {
-    const checkAdminRole = async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        // Cek role di Firestore users collection
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          setIsAdmin(userData.role === "admin"); // Set true jika role = admin
-        }
-      } catch (error) {
-        console.error("Error checking admin role:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAdminRole();
-  }, [user]);
+  // Get auth state dari Zustand store
+  const { user, isAdmin, loading } = useAuthStore();
 
   // Loading screen saat checking admin role
   if (loading) {

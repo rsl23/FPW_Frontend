@@ -13,48 +13,98 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     const fetchStats = async () => {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+      console.log("🔗 API Base URL:", API_BASE_URL);
+
+      let totalProducts = 0;
+      let totalUsers = 0;
+      let totalOrders = 0;
+      let revenue = 0;
+
       try {
-        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
         // Fetch products count dari API
+        console.log("📦 Fetching products...");
         const productsResponse = await fetch(`${API_BASE_URL}/products`);
-        console.log("Products Response:", productsResponse);
-        const productsData = await productsResponse.json();
-        const totalProducts = productsData.length;
+        console.log(
+          "Products Response:",
+          productsResponse.status,
+          productsResponse.ok
+        );
 
-        // Fetch users count dari API
-        const usersResponse = await fetch(`${API_BASE_URL}/users`);
-        const usersData = await usersResponse.json();
-        const totalUsers = usersData.length;
-
-        // Fetch orders count dan revenue dari API
-        const ordersResponse = await fetch(`${API_BASE_URL}/orders`);
-        const ordersData = await ordersResponse.json();
-        const totalOrders = ordersData.length;
-
-        // Hitung revenue dari orders yang accepted
-        const revenue = ordersData
-          .filter((order) => order.status === "accepted")
-          .reduce((sum, order) => sum + (order.total || 0), 0);
-
-        console.log("📊 Dashboard Stats:", {
-          totalProducts,
-          totalUsers,
-          totalOrders,
-          revenue,
-        });
-
-        setStats({
-          totalProducts,
-          totalUsers,
-          totalOrders,
-          revenue,
-        });
+        if (productsResponse.ok) {
+          const productsData = await productsResponse.json();
+          totalProducts = productsData.length;
+          console.log("✅ Products:", totalProducts);
+        } else {
+          console.error("❌ Products fetch failed:", productsResponse.status);
+        }
       } catch (error) {
-        console.error("Error fetching stats:", error);
-      } finally {
-        setLoading(false);
+        console.error("❌ Error fetching products:", error);
       }
+
+      try {
+        // Fetch users count dari API
+        console.log("👥 Fetching users...");
+        const usersResponse = await fetch(`${API_BASE_URL}/users`);
+        console.log("Users Response:", usersResponse.status, usersResponse.ok);
+
+        if (usersResponse.ok) {
+          const usersData = await usersResponse.json();
+          totalUsers = usersData.length;
+          console.log("✅ Users:", totalUsers);
+        } else {
+          console.error("❌ Users fetch failed:", usersResponse.status);
+        }
+      } catch (error) {
+        console.error("❌ Error fetching users:", error);
+      }
+
+      try {
+        // Fetch orders count dan revenue dari API
+        console.log("🛒 Fetching orders...");
+        const ordersResponse = await fetch(`${API_BASE_URL}/orders`);
+        console.log(
+          "Orders Response:",
+          ordersResponse.status,
+          ordersResponse.ok
+        );
+
+        if (ordersResponse.ok) {
+          console.log("📥 Parsing orders JSON...");
+          const ordersData = await ordersResponse.json();
+          console.log("📦 Orders data received:", ordersData.length, "items");
+
+          totalOrders = ordersData.length;
+
+          // Hitung revenue dari orders yang accepted
+          console.log("💰 Calculating revenue...");
+          revenue = ordersData
+            .filter((order) => order.status === "accepted")
+            .reduce((sum, order) => sum + (order.total || 0), 0);
+
+          console.log("✅ Orders:", totalOrders, "Revenue:", revenue);
+        } else {
+          console.error("❌ Orders fetch failed:", ordersResponse.status);
+        }
+      } catch (error) {
+        console.error("❌ Error fetching orders:", error);
+      }
+
+      console.log("📊 Final Dashboard Stats:", {
+        totalProducts,
+        totalUsers,
+        totalOrders,
+        revenue,
+      });
+
+      setStats({
+        totalProducts,
+        totalUsers,
+        totalOrders,
+        revenue,
+      });
+
+      setLoading(false);
     };
 
     fetchStats();

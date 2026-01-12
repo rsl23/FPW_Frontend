@@ -4,8 +4,8 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { signOut } from "firebase/auth";
-import { auth, db } from "../firebase/config";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { auth } from "../firebase/config";
+import { useAuthStore } from "../store/authStore"; // Zustand store
 import { Menu, X } from "lucide-react";
 import logo from "../assets/logo.jpg";
 import "./Navbar.css";
@@ -13,62 +13,17 @@ import "./Navbar.css";
 const Navbar = ({ user }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isAdmin, setIsAdmin] = useState(false); // Admin role detection
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile menu toggle
 
-  // Background sync email verification status dari Firebase Auth ke Firestore
-  // Jalan otomatis saat component mount untuk update status terbaru
+  // Get admin status dari Zustand store
+  const { isAdmin, userData } = useAuthStore();
+
+  // Cleanup: Reset body scroll saat component unmount
   useEffect(() => {
-    const syncEmailVerification = async () => {
-      const user = auth.currentUser;
-      if (!user) return;
-
-      try {
-        await user.reload(); // Refresh user data dari Firebase Auth
-        if (user.emailVerified) {
-          const userDocRef = doc(db, "users", user.uid);
-          const userDoc = await getDoc(userDocRef);
-          // Update Firestore jika belum ter-sync
-          if (userDoc.exists() && !userDoc.data().email_verified) {
-            await updateDoc(userDocRef, { email_verified: true });
-            console.log("✅ Email verification synced in background");
-          }
-        }
-      } catch (error) {
-        console.error("Error syncing email verification:", error);
-      }
-    };
-
-    syncEmailVerification();
-
-    // Cleanup: Reset body scroll saat component unmount
     return () => {
       document.body.style.overflow = "unset";
     };
-  }, [user]);
-
-  // Check admin role dari Firestore user document
-  // Jalan setiap kali user state berubah
-  useEffect(() => {
-    const checkAdminRole = async () => {
-      if (!user) {
-        setIsAdmin(false);
-        return;
-      }
-
-      try {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          setIsAdmin(userData.role === "admin"); // Set true jika role = admin
-        }
-      } catch (error) {
-        console.error("Error checking admin role:", error);
-      }
-    };
-
-    checkAdminRole();
-  }, [user]);
+  }, []);
 
   // Hide navbar di halaman login dan register
   if (location.pathname === "/login" || location.pathname === "/register") {

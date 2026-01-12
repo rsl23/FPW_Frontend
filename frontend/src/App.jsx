@@ -11,6 +11,7 @@ import {
 } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase/config";
+import { useAuthStore } from "./store/authStore"; // Zustand store
 
 // Import public pages components
 import Navbar from "./navbar/Navbar";
@@ -56,18 +57,25 @@ function App() {
   const [user, setUser] = useState(null); // User object dari Firebase Auth
   const [loading, setLoading] = useState(true); // Loading state saat check auth
 
+  // Zustand store actions
+  const initializeUser = useAuthStore((state) => state.initializeUser);
+
   // Setup Firebase auth listener untuk track authentication state changes
   useEffect(() => {
     // onAuthStateChanged: listener yang trigger setiap kali auth state berubah
     // (login, logout, token refresh, dll)
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser); // Update user state (null jika logout)
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser); // Update local user state (untuk backward compatibility)
+
+      // Initialize user data di Zustand store (fetch dari API)
+      await initializeUser(currentUser);
+
       setLoading(false); // Auth check selesai
     });
 
     // Cleanup: unsubscribe listener saat component unmount
     return () => unsubscribe();
-  }, []);
+  }, [initializeUser]);
 
   // Tampilkan loading screen saat masih check authentication
   if (loading) {
