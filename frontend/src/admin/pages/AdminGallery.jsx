@@ -289,7 +289,7 @@ const GalleryPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
           {galleryItems.map((item) => (
             <div
-              key={item.id}
+              key={item._id}
               className="bg-white rounded-lg shadow-sm md:shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow"
             >
               {/* Image */}
@@ -305,11 +305,10 @@ const GalleryPage = () => {
                 />
                 <div className="absolute top-2 right-2">
                   <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      item.active
-                        ? "bg-green-100 text-green-800 border border-green-200"
-                        : "bg-red-100 text-red-800 border border-red-200"
-                    }`}
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${item.active
+                      ? "bg-green-100 text-green-800 border border-green-200"
+                      : "bg-red-100 text-red-800 border border-red-200"
+                      }`}
                   >
                     {item.active ? "Aktif" : "Nonaktif"}
                   </span>
@@ -327,12 +326,11 @@ const GalleryPage = () => {
                 <div className="flex items-center justify-between mt-3">
                   <div className="flex gap-2">
                     <button
-                      onClick={() => handleToggleActive(item.id, item.active)}
-                      className={`p-1.5 md:p-2 rounded-lg transition ${
-                        item.active
-                          ? "text-yellow-600 hover:bg-yellow-50 border border-yellow-200"
-                          : "text-green-600 hover:bg-green-50 border border-green-200"
-                      }`}
+                      onClick={() => handleToggleActive(item._id, item.active)}
+                      className={`p-1.5 md:p-2 rounded-lg transition ${item.active
+                        ? "text-yellow-600 hover:bg-yellow-50 border border-yellow-200"
+                        : "text-green-600 hover:bg-green-50 border border-green-200"
+                        }`}
                       title={item.active ? "Nonaktifkan" : "Aktifkan"}
                     >
                       {item.active ? (
@@ -342,7 +340,7 @@ const GalleryPage = () => {
                       )}
                     </button>
                     <button
-                      onClick={() => handleDeleteGallery(item.id)}
+                      onClick={() => handleDeleteGallery(item._id)}
                       className="p-1.5 md:p-2 text-red-600 hover:bg-red-50 rounded-lg transition border border-red-200"
                       title="Hapus"
                     >
@@ -512,13 +510,12 @@ const GalleryPage = () => {
           <div className="bg-white rounded-lg shadow-xl max-w-sm w-full mx-4 p-4 md:p-6 transform transition-all">
             <div className="flex items-center gap-3 mb-3 md:mb-4">
               <div
-                className={`p-1.5 md:p-2 rounded-full ${
-                  popupData.type === "success"
-                    ? "bg-green-100 text-green-600"
-                    : popupData.type === "error"
+                className={`p-1.5 md:p-2 rounded-full ${popupData.type === "success"
+                  ? "bg-green-100 text-green-600"
+                  : popupData.type === "error"
                     ? "bg-red-100 text-red-600"
                     : "bg-blue-100 text-blue-600"
-                }`}
+                  }`}
               >
                 {popupData.type === "success" ? (
                   <CheckCircle size={20} className="md:w-6 md:h-6" />
@@ -538,9 +535,8 @@ const GalleryPage = () => {
             </p>
 
             <div
-              className={`flex gap-3 ${
-                popupData.showCancel ? "justify-between" : "justify-end"
-              }`}
+              className={`flex gap-3 ${popupData.showCancel ? "justify-between" : "justify-end"
+                }`}
             >
               {popupData.showCancel && (
                 <button
@@ -557,13 +553,12 @@ const GalleryPage = () => {
                   }
                   closePopup();
                 }}
-                className={`flex-1 py-2 rounded-lg transition font-medium text-sm md:text-base ${
-                  popupData.type === "success"
-                    ? "bg-green-600 text-white hover:bg-green-700"
-                    : popupData.type === "error"
+                className={`flex-1 py-2 rounded-lg transition font-medium text-sm md:text-base ${popupData.type === "success"
+                  ? "bg-green-600 text-white hover:bg-green-700"
+                  : popupData.type === "error"
                     ? "bg-red-600 text-white hover:bg-red-700"
                     : "bg-blue-600 text-white hover:bg-blue-700"
-                }`}
+                  }`}
               >
                 {popupData.type === "confirm" ? "Ya" : "OK"}
               </button>
