@@ -93,10 +93,10 @@ const Product = () => {
   }, []);
 
   const getCategoryName = (kategoriId) => {
-    if (!kategoriId) return "Tidak ada kategori";
-    const category = categories.find((cat) => cat.id === kategoriId);
+    const category = categories.find((cat) => cat._id === kategoriId);
     return category ? category.nama : "Tidak ada kategori";
   };
+
 
   const getProductCategoryName = (product) => {
     if (product.kategori_nama) return product.kategori_nama;

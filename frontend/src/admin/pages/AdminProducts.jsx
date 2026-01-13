@@ -57,7 +57,7 @@ const AdminProducts = () => {
   };
 
   const getProductCategoryId = (product) =>
-    product.kategori_id || product.kategori || "";
+    product.kategori_id || "";
 
 
   const fetchProducts = async () => {
@@ -175,7 +175,7 @@ const AdminProducts = () => {
     setCurrentProduct(product);
     setFormData({
       nama: product.nama,
-      kategori_id: getProductCategoryId(product),
+      kategori_id: product.kategori_id || "", //
       harga: product.harga.toString(),
       stok: product.stok ? product.stok.toString() : "0",
       img_url: product.img_url || "",
@@ -252,6 +252,7 @@ const AdminProducts = () => {
 
   // Fungsi untuk edit kategori
   const handleEditCategory = (category) => {
+    console.log("Edit kategori:", category);
     setEditingCategory(category);
     setEditCategoryName(category.nama);
   };
@@ -287,9 +288,10 @@ const AdminProducts = () => {
 
   // Helper function untuk mendapatkan nama kategori dari ID
   const getCategoryName = (kategoriId) => {
-    const category = categories.find((cat) => cat._id === kategoriId);
-    return category ? category.nama : "Tidak ada kategori";
+    const cat = categories.find(c => c._id === kategoriId); // ⚡ FIX
+    return cat ? cat.nama : "Tidak ada kategori";
   };
+
 
   return (
     <div className="space-y-4 md:space-y-6 p-3 md:p-4 lg:p-6">
@@ -395,7 +397,7 @@ const AdminProducts = () => {
                               Rp {product.harga.toLocaleString("id-ID")}
                             </span>
                             <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                              {getCategoryName(getProductCategoryId(product))}
+                              {getCategoryName(product.kategori_id)}
                             </span>
                           </div>
                           <div className="mt-2 flex items-center justify-between">
@@ -469,7 +471,7 @@ const AdminProducts = () => {
                       </td>
                       <td className="px-4 md:px-6 py-4">
                         <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                          {getCategoryName(getProductCategoryId(product))}
+                          {getCategoryName(product.kategori_id)}
                         </span>
                       </td>
                       <td className="px-4 md:px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
@@ -793,62 +795,61 @@ const AdminProducts = () => {
                     Belum ada kategori
                   </div>
                 ) : (
-                  categories.map((category) => (
-                    <div
-                      key={category._id}
-                      className="flex justify-between items-center p-3 border-b border-gray-200 last:border-b-0 hover:bg-gray-50"
-                    >
-                      {editingCategory?._id === category._id ? (
-                        <div className="flex-1 flex gap-2">
-                          <input
-                            type="text"
-                            value={editCategoryName}
-                            onChange={(e) =>
-                              setEditCategoryName(e.target.value)
-                            }
-                            className="flex-1 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
-                            onKeyPress={(e) =>
-                              e.key === "Enter" && handleUpdateCategory()
-                            }
-                          />
-                          <button
-                            onClick={handleUpdateCategory}
-                            className="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 whitespace-nowrap"
-                          >
-                            ✓
-                          </button>
-                          <button
-                            onClick={cancelEditCategory}
-                            className="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700 whitespace-nowrap"
-                          >
-                            ✗
-                          </button>
-                        </div>
-                      ) : (
-                        <>
-                          <span className="text-gray-800 flex-1 text-sm truncate">
-                            {category.nama}
-                          </span>
-                          <div className="flex gap-2">
+                  categories.map((category) => {
+                    console.log("Render kategori:", category);
+                    return (
+                      <div
+                        key={category._id}
+                        className="flex justify-between items-center p-3 border-b border-gray-200 last:border-b-0 hover:bg-gray-50"
+                      >
+                        {editingCategory?._id === category._id ? (
+                          <div className="flex-1 flex gap-2">
+                            <input
+                              type="text"
+                              value={editCategoryName}
+                              onChange={(e) => setEditCategoryName(e.target.value)}
+                              className="flex-1 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+                              onKeyPress={(e) => e.key === "Enter" && handleUpdateCategory()}
+                            />
                             <button
-                              onClick={() => handleEditCategory(category)}
-                              className="text-blue-600 hover:text-blue-800 p-1"
-                              title="Edit kategori"
+                              onClick={handleUpdateCategory}
+                              className="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 whitespace-nowrap"
                             >
-                              <Edit2 size={14} />
+                              ✓
                             </button>
                             <button
-                              onClick={() => handleDeleteCategory(category)}
-                              className="text-red-600 hover:text-red-800 p-1"
-                              title="Hapus kategori"
+                              onClick={cancelEditCategory}
+                              className="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700 whitespace-nowrap"
                             >
-                              <Trash2 size={14} />
+                              ✗
                             </button>
                           </div>
-                        </>
-                      )}
-                    </div>
-                  ))
+                        ) : (
+                          <>
+                            <span className="text-gray-800 flex-1 text-sm truncate">
+                              {category.nama}
+                            </span>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleEditCategory(category)}
+                                className="text-blue-600 hover:text-blue-800 p-1"
+                                title="Edit kategori"
+                              >
+                                <Edit2 size={14} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteCategory(category)}
+                                className="text-red-600 hover:text-red-800 p-1"
+                                title="Hapus kategori"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })
                 )}
               </div>
               <p className="text-xs text-gray-500 mt-2">
