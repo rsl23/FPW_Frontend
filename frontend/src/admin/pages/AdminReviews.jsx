@@ -35,65 +35,50 @@ const AdminReviews = () => {
   const fetchReviews = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/reviews`
+
+      const resReviews = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/reviews/admin`
       );
-      if (response.ok) {
-        const reviewsData = await response.json();
 
-        // Fetch products untuk semua reviews (hanya sekali)
-        const productsResponse = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/products`
-        );
-        const productsData = productsResponse.ok
-          ? await productsResponse.json()
-          : [];
+      const resProducts = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/products`
+      );
 
-        // Add product and user data untuk setiap review
-        const reviewsWithDetails = reviewsData.map((review) => {
-          // Find product
-          const product = productsData.find((p) => p.id === review.produk_id);
+      const reviewsJson = await resReviews.json();
+      const productsJson = await resProducts.json();
 
-          // Use data yang sudah tersimpan di review (userName, userPhotoURL)
-          const userData = {
-            displayName: review.userName || "Anonymous",
-            photoURL: review.userPhotoURL || null,
-          };
+      const reviewsData = Array.isArray(reviewsJson)
+        ? reviewsJson
+        : reviewsJson.data || [];
 
-          return {
-            ...review,
-            product: product || null,
-            user: userData,
-          };
-        });
+      const productsData = Array.isArray(productsJson)
+        ? productsJson
+        : productsJson.data || [];
 
-        setReviews(reviewsWithDetails);
-      }
-    } catch (error) {
-      console.error("Error fetching reviews:", error);
+      const reviewsWithDetails = reviewsData.map((review) => ({
+        ...review,
+        product: review.produk || null,
+        user: {
+          displayName: review.user?.name || review.userName || "Anonymous",
+          photoURL: review.user?.photo || review.userPhotoURL || null,
+        },
+        order_id: review.order_id || "N/A",
+      }));
+
+      console.log("Raw reviews from backend:", reviewsData);
+      console.log("Mapped reviews:", reviewsWithDetails);
+
+
+      setReviews(reviewsWithDetails);
+    } catch (err) {
+      console.error("Error fetching reviews:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch products untuk filter
-  const fetchProducts = async () => {
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/products`
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setProducts(data);
-      }
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    }
-  };
-
   useEffect(() => {
     fetchReviews();
-    fetchProducts();
   }, []);
 
   // Open delete confirmation modal
@@ -135,7 +120,7 @@ const AdminReviews = () => {
 
       // SEND QUERY PARAMETERS, bukan Authorization header
       const url = new URL(
-        `${import.meta.env.VITE_API_BASE_URL}/reviews/${reviewToDelete.id}`
+        `${import.meta.env.VITE_API_BASE_URL}/reviews/${reviewToDelete._id}`
       );
 
       // Tambahkan query parameters seperti yang diharapkan backend
@@ -168,7 +153,7 @@ const AdminReviews = () => {
 
         // Update state lokal
         setReviews((prevReviews) =>
-          prevReviews.filter((review) => review.id !== reviewToDelete.id)
+          prevReviews.filter((review) => review._id !== reviewToDelete._id)
         );
 
         // Tutup modal
@@ -200,7 +185,7 @@ const AdminReviews = () => {
 
           // Hapus dari state lokal
           setReviews((prevReviews) =>
-            prevReviews.filter((review) => review.id !== reviewToDelete.id)
+            prevReviews.filter((review) => review._id !== reviewToDelete._id)
           );
         } else {
           // Other errors
@@ -233,8 +218,7 @@ const AdminReviews = () => {
 
         if (userData.role !== "admin") {
           toast.error(
-            `Role Anda: ${
-              userData.role || "user"
+            `Role Anda: ${userData.role || "user"
             }. Hanya admin yang dapat menghapus review.`
           );
         }
@@ -261,7 +245,9 @@ const AdminReviews = () => {
       review.order_id?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesProduct =
-      selectedProduct === "all" || review.produk_id === selectedProduct;
+      selectedProduct === "all" ||
+      String(review.produk_id?._id || review.produk_id) === selectedProduct;
+
     const matchesRating =
       ratingFilter === "all" || review.rating === parseInt(ratingFilter);
 
@@ -333,7 +319,7 @@ const AdminReviews = () => {
   // Get selected product name
   const getSelectedProductName = () => {
     if (selectedProduct === "all") return "Semua Produk";
-    const product = products.find((p) => p.id === selectedProduct);
+    const product = products.find((p) => String(p._id) === selectedProduct);
     return product ? product.nama : "Semua Produk";
   };
 
@@ -343,9 +329,9 @@ const AdminReviews = () => {
     average:
       reviews.length > 0
         ? (
-            reviews.reduce((sum, review) => sum + review.rating, 0) /
-            reviews.length
-          ).toFixed(1)
+          reviews.reduce((sum, review) => sum + review.rating, 0) /
+          reviews.length
+        ).toFixed(1)
         : 0,
     rating5: getRatingCount(5),
     rating1: getRatingCount(1),
@@ -476,9 +462,8 @@ const AdminReviews = () => {
                 </div>
                 <ChevronDown
                   size={14}
-                  className={`transition-transform ${
-                    productDropdownOpen ? "rotate-180" : ""
-                  }`}
+                  className={`transition-transform ${productDropdownOpen ? "rotate-180" : ""
+                    }`}
                 />
               </button>
 
@@ -490,11 +475,10 @@ const AdminReviews = () => {
                         setSelectedProduct("all");
                         setProductDropdownOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center justify-between text-xs md:text-sm ${
-                        selectedProduct === "all"
-                          ? "bg-indigo-100 text-indigo-700"
-                          : "hover:bg-gray-100"
-                      }`}
+                      className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center justify-between text-xs md:text-sm ${selectedProduct === "all"
+                        ? "bg-indigo-100 text-indigo-700"
+                        : "hover:bg-gray-100"
+                        }`}
                     >
                       <span>Semua Produk</span>
                       {selectedProduct === "all" && (
@@ -503,21 +487,20 @@ const AdminReviews = () => {
                     </button>
                     {products.map((product) => (
                       <button
-                        key={product.id}
+                        key={product._id}
                         onClick={() => {
-                          setSelectedProduct(product.id);
+                          setSelectedProduct(product._id);
                           setProductDropdownOpen(false);
                         }}
-                        className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center justify-between text-xs md:text-sm ${
-                          selectedProduct === product.id
-                            ? "bg-indigo-100 text-indigo-700"
-                            : "hover:bg-gray-100"
-                        }`}
+                        className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center justify-between text-xs md:text-sm ${selectedProduct === product._id
+                          ? "bg-indigo-100 text-indigo-700"
+                          : "hover:bg-gray-100"
+                          }`}
                       >
                         <span className="truncate flex-1 mr-2">
                           {product.nama}
                         </span>
-                        {selectedProduct === product.id && (
+                        {selectedProduct === product._id && (
                           <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full flex-shrink-0"></div>
                         )}
                       </button>
@@ -543,9 +526,8 @@ const AdminReviews = () => {
                 </div>
                 <ChevronDown
                   size={14}
-                  className={`transition-transform ${
-                    filterDropdownOpen ? "rotate-180" : ""
-                  }`}
+                  className={`transition-transform ${filterDropdownOpen ? "rotate-180" : ""
+                    }`}
                 />
               </button>
 
@@ -557,11 +539,10 @@ const AdminReviews = () => {
                         setRatingFilter("all");
                         setFilterDropdownOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center justify-between text-xs md:text-sm ${
-                        ratingFilter === "all"
-                          ? "bg-indigo-100 text-indigo-700"
-                          : "hover:bg-gray-100"
-                      }`}
+                      className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center justify-between text-xs md:text-sm ${ratingFilter === "all"
+                        ? "bg-indigo-100 text-indigo-700"
+                        : "hover:bg-gray-100"
+                        }`}
                     >
                       <span>Semua Rating</span>
                       {ratingFilter === "all" && (
@@ -575,11 +556,10 @@ const AdminReviews = () => {
                           setRatingFilter(rating.toString());
                           setFilterDropdownOpen(false);
                         }}
-                        className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center justify-between text-xs md:text-sm ${
-                          ratingFilter === rating.toString()
-                            ? "bg-indigo-100 text-indigo-700"
-                            : "hover:bg-gray-100"
-                        }`}
+                        className={`w-full text-left px-3 py-2 rounded transition-colors flex items-center justify-between text-xs md:text-sm ${ratingFilter === rating.toString()
+                          ? "bg-indigo-100 text-indigo-700"
+                          : "hover:bg-gray-100"
+                          }`}
                       >
                         <div className="flex items-center gap-2">
                           <div className="flex items-center gap-1">
@@ -628,7 +608,7 @@ const AdminReviews = () => {
           <div className="grid gap-4 sm:gap-6">
             {filteredReviews.map((review) => (
               <div
-                key={review.id}
+                key={review._id}
                 className="bg-white rounded-lg md:rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
               >
                 <div className="p-4 md:p-6">
