@@ -46,8 +46,9 @@ const Product = () => {
   const fetchAllProductReviews = async (productsData) => {
     const ratings = {};
     for (const product of productsData) {
-      const reviewData = await fetchProductReviews(product.id);
-      ratings[product.id] = reviewData;
+      const reviewData = await fetchProductReviews(product._id);
+      ratings[product._id] = reviewData;
+
     }
     setProductRatings(ratings);
   };
@@ -140,7 +141,7 @@ const Product = () => {
   };
 
   const filteredAndSortedProducts = useMemo(() => {
-    let result = products.filter((p) => p.active);
+    let result = products.filter((p) => p.active !== false);
 
     if (selectedCategory !== "Semua") {
       result = result.filter(
@@ -166,8 +167,9 @@ const Product = () => {
         break;
       case "rating":
         result = [...result].sort((a, b) => {
-          const ratingA = productRatings[a.id]?.averageRating || 0;
-          const ratingB = productRatings[b.id]?.averageRating || 0;
+          const ratingA = productRatings[a._id]?.averageRating || 0;
+          const ratingB = productRatings[b._id]?.averageRating || 0;
+
           return ratingB - ratingA;
         });
         break;
@@ -285,24 +287,22 @@ const Product = () => {
                     {selectedCategory === "Semua"
                       ? "Semua Kategori"
                       : selectedCategory.length > 15
-                      ? selectedCategory.substring(0, 12) + "..."
-                      : selectedCategory}
+                        ? selectedCategory.substring(0, 12) + "..."
+                        : selectedCategory}
                   </span>
                 </div>
                 <ChevronDown
                   size={14}
-                  className={`transition-transform duration-300 ${
-                    categoryDropdownOpen ? "rotate-180" : ""
-                  }`}
+                  className={`transition-transform duration-300 ${categoryDropdownOpen ? "rotate-180" : ""
+                    }`}
                 />
               </button>
 
               <div
-                className={`absolute top-full left-0 right-0 mt-1 sm:mt-2 bg-gray-800 border border-white/10 rounded-lg sm:rounded-xl shadow-lg transition-all duration-300 z-[9999] max-h-60 overflow-y-auto ${
-                  categoryDropdownOpen
-                    ? "opacity-100 visible"
-                    : "opacity-0 invisible"
-                }`}
+                className={`absolute top-full left-0 right-0 mt-1 sm:mt-2 bg-gray-800 border border-white/10 rounded-lg sm:rounded-xl shadow-lg transition-all duration-300 z-[9999] max-h-60 overflow-y-auto ${categoryDropdownOpen
+                  ? "opacity-100 visible"
+                  : "opacity-0 invisible"
+                  }`}
               >
                 <div className="p-1 sm:p-2">
                   <div
@@ -347,18 +347,16 @@ const Product = () => {
                 </div>
                 <ChevronDown
                   size={14}
-                  className={`transition-transform duration-300 ${
-                    sortDropdownOpen ? "rotate-180" : ""
-                  }`}
+                  className={`transition-transform duration-300 ${sortDropdownOpen ? "rotate-180" : ""
+                    }`}
                 />
               </button>
 
               <div
-                className={`absolute top-full left-0 right-0 mt-1 sm:mt-2 bg-gray-800 border border-white/10 rounded-lg sm:rounded-xl shadow-lg transition-all duration-300 z-[9999] ${
-                  sortDropdownOpen
-                    ? "opacity-100 visible"
-                    : "opacity-0 invisible"
-                }`}
+                className={`absolute top-full left-0 right-0 mt-1 sm:mt-2 bg-gray-800 border border-white/10 rounded-lg sm:rounded-xl shadow-lg transition-all duration-300 z-[9999] ${sortDropdownOpen
+                  ? "opacity-100 visible"
+                  : "opacity-0 invisible"
+                  }`}
               >
                 <div className="p-1 sm:p-2">
                   <div
@@ -429,15 +427,15 @@ const Product = () => {
             {(searchTerm ||
               selectedCategory !== "Semua" ||
               sortBy !== "default") && (
-              <button
-                onClick={clearFilters}
-                className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-500/20 border border-red-500/30 text-red-300 rounded-lg sm:rounded-xl hover:bg-red-500/30 transition-colors text-sm sm:text-base whitespace-nowrap"
-              >
-                <X size={16} />
-                <span className="hidden sm:inline">Reset</span>
-                <span className="sm:hidden">Reset</span>
-              </button>
-            )}
+                <button
+                  onClick={clearFilters}
+                  className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-500/20 border border-red-500/30 text-red-300 rounded-lg sm:rounded-xl hover:bg-red-500/30 transition-colors text-sm sm:text-base whitespace-nowrap"
+                >
+                  <X size={16} />
+                  <span className="hidden sm:inline">Reset</span>
+                  <span className="sm:hidden">Reset</span>
+                </button>
+              )}
           </div>
         </div>
 
@@ -461,15 +459,15 @@ const Product = () => {
           <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
             {filteredAndSortedProducts.map((p) => {
               const stockStatus = getStockStatus(p.stok);
-              const productRating = productRatings[p.id] || {
+              const productRating = productRatings[p._id] || {
                 averageRating: 0,
                 totalReviews: 0,
               };
 
               return (
                 <div
-                  key={p.id}
-                  onClick={() => navigate(`/product/${p.id}`)}
+                  key={p._id}
+                  onClick={() => navigate(`/product/${p._id}`)}
                   className="group cursor-pointer bg-gradient-to-br from-gray-900/80 to-gray-800/60 backdrop-blur-sm sm:backdrop-blur-lg rounded-lg sm:rounded-xl border border-gray-700/50 hover:border-pink-500/50 transition-all duration-300 hover:scale-[1.02] active:scale-95 hover:shadow-lg hover:shadow-pink-500/10 overflow-hidden flex flex-col relative z-0"
                 >
                   {/* Product Image */}

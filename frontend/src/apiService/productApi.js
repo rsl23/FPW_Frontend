@@ -14,6 +14,7 @@ export async function getProducts() {
     if (!response.ok) throw new Error("Gagal mengambil produk");
     return await response.json(); // Return array of products
   } catch (error) {
+    console.log("API URL:", `${API_URL}/products`);
     console.error("Error di getProducts:", error);
     throw error; // Re-throw untuk ditangani di component
   }
