@@ -48,13 +48,19 @@ const AdminOrders = () => {
     const fetchUsers = async () => {
       try {
         const data = await getAllUsers(); // API MongoDB
-        setUsers(data);
+        // ubah array menjadi object { userId: user }
+        const usersMap = {};
+        data.forEach(user => {
+          usersMap[user._id] = user;
+        });
+        setUsers(usersMap);
       } catch (err) {
         console.error(err);
       }
     };
     fetchUsers();
   }, []);
+
 
 
   // Fungsi untuk format tanggal
