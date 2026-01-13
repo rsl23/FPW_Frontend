@@ -35,6 +35,7 @@ const ReviewModal = ({ isOpen, onClose, product, orderId, onReviewSubmit }) => {
       toast.error("Silakan beri rating");
       return;
     }
+    console.log(komentar);
 
     setLoading(true);
     try {

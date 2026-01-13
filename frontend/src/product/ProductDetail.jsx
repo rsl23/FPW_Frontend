@@ -341,15 +341,17 @@ const ProductDetail = () => {
           <div className="flex justify-center">
             <div className="relative group w-full">
               <div
-                className={`absolute inset-0 bg-gradient-to-br from-pink-500/20 to-indigo-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500 ${imageLoaded ? "opacity-100" : "opacity-0"
-                  }`}
+                className={`absolute inset-0 bg-gradient-to-br from-pink-500/20 to-indigo-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500 ${
+                  imageLoaded ? "opacity-100" : "opacity-0"
+                }`}
               ></div>
               <div className="relative bg-white/5 backdrop-blur-lg border border-white/20 rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl w-full">
                 <img
                   src={product.img_url || "/placeholder-image.jpg"}
                   alt={product.nama}
-                  className={`w-full h-auto max-h-[300px] sm:max-h-[400px] md:max-h-[500px] object-contain rounded-2xl transition-all duration-500 ${imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
-                    } group-hover:scale-105`}
+                  className={`w-full h-auto max-h-[300px] sm:max-h-[400px] md:max-h-[500px] object-contain rounded-2xl transition-all duration-500 ${
+                    imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
+                  } group-hover:scale-105`}
                   onLoad={() => setImageLoaded(true)}
                   onError={(e) => {
                     e.target.src = "/placeholder-image.jpg";
@@ -458,10 +460,11 @@ const ProductDetail = () => {
               <button
                 onClick={handleAddToCart}
                 disabled={product.stok === 0}
-                className={`w-full px-4 py-3 md:px-8 md:py-4 rounded-xl md:rounded-2xl font-semibold text-white transition-all duration-300 flex items-center justify-center gap-2 md:gap-3 text-base md:text-lg ${product.stok === 0
-                  ? "bg-gray-600 cursor-not-allowed opacity-50"
-                  : "bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 hover:shadow-xl md:hover:shadow-2xl hover:scale-[1.02] md:hover:scale-105"
-                  }`}
+                className={`w-full px-4 py-3 md:px-8 md:py-4 rounded-xl md:rounded-2xl font-semibold text-white transition-all duration-300 flex items-center justify-center gap-2 md:gap-3 text-base md:text-lg ${
+                  product.stok === 0
+                    ? "bg-gray-600 cursor-not-allowed opacity-50"
+                    : "bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 hover:shadow-xl md:hover:shadow-2xl hover:scale-[1.02] md:hover:scale-105"
+                }`}
               >
                 <ShoppingCart size={20} />
                 {product.stok === 0 ? "Stok Habis" : "Tambah ke Keranjang"}
@@ -586,8 +589,9 @@ const ProductDetail = () => {
                   </span>
                   <ChevronDown
                     size={14}
-                    className={`transition-transform ${filterDropdownOpen ? "rotate-180" : ""
-                      }`}
+                    className={`transition-transform ${
+                      filterDropdownOpen ? "rotate-180" : ""
+                    }`}
                   />
                 </button>
 
@@ -604,10 +608,11 @@ const ProductDetail = () => {
                             setRatingFilter("all");
                             setFilterDropdownOpen(false);
                           }}
-                          className={`w-full text-left px-2 py-1.5 md:px-3 md:py-2 rounded text-xs md:text-sm transition-colors ${ratingFilter === "all"
-                            ? "bg-indigo-600 text-white"
-                            : "text-gray-300 hover:bg-white/10"
-                            }`}
+                          className={`w-full text-left px-2 py-1.5 md:px-3 md:py-2 rounded text-xs md:text-sm transition-colors ${
+                            ratingFilter === "all"
+                              ? "bg-indigo-600 text-white"
+                              : "text-gray-300 hover:bg-white/10"
+                          }`}
                         >
                           Semua Rating ({totalReviews})
                         </button>
@@ -618,10 +623,11 @@ const ProductDetail = () => {
                               setRatingFilter(rating.toString());
                               setFilterDropdownOpen(false);
                             }}
-                            className={`w-full text-left px-2 py-1.5 md:px-3 md:py-2 rounded text-xs md:text-sm transition-colors flex items-center justify-between ${ratingFilter === rating.toString()
-                              ? "bg-indigo-600 text-white"
-                              : "text-gray-300 hover:bg-white/10"
-                              }`}
+                            className={`w-full text-left px-2 py-1.5 md:px-3 md:py-2 rounded text-xs md:text-sm transition-colors flex items-center justify-between ${
+                              ratingFilter === rating.toString()
+                                ? "bg-indigo-600 text-white"
+                                : "text-gray-300 hover:bg-white/10"
+                            }`}
                           >
                             <div className="flex items-center gap-1 md:gap-2">
                               <div className="flex items-center gap-0.5 md:gap-1">
@@ -708,9 +714,9 @@ const ProductDetail = () => {
                         </div>
                       </div>
 
-                      {review.review_text && (
+                      {review.komentar && (
                         <p className="text-gray-300 text-xs md:text-sm leading-relaxed mb-1 md:mb-2">
-                          {review.review_text}
+                          {review.komentar}
                         </p>
                       )}
 
