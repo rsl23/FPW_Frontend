@@ -136,6 +136,9 @@ const CartPage = () => {
 
       const total = calculateTotal();
 
+      console.log("Ini orderItems ", orderItems);
+      console.log(total);
+
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/orders`, {
         method: "POST",
         headers: {
@@ -149,6 +152,7 @@ const CartPage = () => {
       });
 
       const responseData = await res.json();
+      console.log("Ini response checkout: ", responseData);
 
       if (!res.ok) {
         const errorMsg =

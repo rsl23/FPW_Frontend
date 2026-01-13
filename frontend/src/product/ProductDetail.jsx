@@ -47,12 +47,17 @@ const ProductDetail = () => {
   const fetchProductReviews = async (productId) => {
     try {
       setReviewsLoading(true);
+      console.log("Ini productId ", productId);
+
       const response = await fetch(
         `${import.meta.env.VITE_API_BASE_URL}/reviews/product/${productId}`
       );
+      console.log(response);
+
       if (response.ok) {
         const data = await response.json();
         setAllReviews(data.reviews); // Simpan semua untuk filtering
+        console.log(data);
         setReviews(data.reviews); // Default tampilkan semua
         setAverageRating(data.averageRating);
         setTotalReviews(data.totalReviews);
@@ -138,7 +143,7 @@ const ProductDetail = () => {
         setCategories(categoriesData);
 
         // Fetch reviews setelah product ditemukan
-        await fetchProductReviews(selected.id);
+        await fetchProductReviews(selected._id);
       } catch (err) {
         console.error("Error fetching data:", err);
         toast.error("Gagal memuat data produk", {
@@ -161,7 +166,9 @@ const ProductDetail = () => {
 
     if (product.kategori_nama) return product.kategori_nama;
     if (product.kategori_id) {
-      const category = categories.find((cat) => cat._id === product.kategori_id);
+      const category = categories.find(
+        (cat) => cat._id === product.kategori_id
+      );
       if (category) return category.nama;
     }
     if (product.kategori) return product.kategori;
@@ -684,7 +691,7 @@ const ProductDetail = () => {
                     <div className="flex-1">
                       <div className="flex flex-col sm:flex-row sm:items-center gap-1 md:gap-3 mb-1 md:mb-2">
                         <span className="text-white text-xs md:text-sm font-medium">
-                          {review.user?.displayName || "Pelanggan"}
+                          {review.userName || "Pelanggan"}
                         </span>
                         <div className="flex items-center gap-0.5 md:gap-1">
                           {[1, 2, 3, 4, 5].map((star) => (
@@ -701,9 +708,9 @@ const ProductDetail = () => {
                         </div>
                       </div>
 
-                      {review.komentar && (
+                      {review.review_text && (
                         <p className="text-gray-300 text-xs md:text-sm leading-relaxed mb-1 md:mb-2">
-                          {review.komentar}
+                          {review.review_text}
                         </p>
                       )}
 

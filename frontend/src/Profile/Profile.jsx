@@ -788,14 +788,14 @@ const Profile = () => {
                 <div className="space-y-4 sm:space-y-6">
                   {acceptedOrders.map((order) => (
                     <div
-                      key={order.id}
+                      key={order._id}
                       className="bg-white/10 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 hover:bg-white/15 transition-all border border-white/10"
                     >
                       {/* Order Header */}
                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 pb-3 border-b border-white/20">
                         <div className="mb-2 sm:mb-0">
                           <p className="text-xs sm:text-sm text-gray-400">
-                            Order: {order.id.substring(0, 8)}...
+                            Order: {order._id.substring(0, 8)}...
                           </p>
                           <p className="text-xs sm:text-sm text-gray-400 mt-1">
                             {formatDate(order.createdAt)}
@@ -854,7 +854,10 @@ const Profile = () => {
 
                                 {/* Review Button */}
                                 <div className="flex-shrink-0">
-                                  {hasUserReviewed(order.id, item.produk_id) ? (
+                                  {hasUserReviewed(
+                                    order._id,
+                                    item.produk_id
+                                  ) ? (
                                     <div className="flex items-center gap-2 text-green-400">
                                       <Star
                                         className="fill-green-400"
@@ -872,7 +875,7 @@ const Profile = () => {
                                             id: item.produk_id,
                                             nama: item.produk?.nama || "Produk",
                                           },
-                                          order.id
+                                          order._id
                                         )
                                       }
                                       className="px-3 py-1.5 sm:px-4 sm:py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-xs sm:text-sm font-medium transition whitespace-nowrap"
