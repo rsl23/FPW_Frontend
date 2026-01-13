@@ -56,6 +56,10 @@ const AdminProducts = () => {
     }
   };
 
+  const getProductCategoryId = (product) =>
+    product.kategori_id || product.kategori || "";
+
+
   const fetchProducts = async () => {
     try {
       setLoading(true);
@@ -82,7 +86,7 @@ const AdminProducts = () => {
   const handleToggleActive = async (product) => {
     try {
       const updatedProduct = { active: !product.active };
-      await updateProduct(product.id, updatedProduct);
+      await updateProduct(product._id, updatedProduct);
       fetchProducts();
     } catch (error) {
       console.error("Gagal mengubah status produk:", error);
@@ -145,10 +149,10 @@ const AdminProducts = () => {
     try {
       if (editMode && currentProduct) {
         // Update produk
-        await updateProduct(currentProduct.id, productData);
+        await updateProduct(currentProduct._id, productData);
 
         // Update stok terpisah
-        await updateProductStock(currentProduct.id, { stok: stokData });
+        await updateProductStock(currentProduct._id, { stok: stokData });
       } else {
         // Tambah produk baru dengan stok
         await addProduct({ ...productData, stok: stokData });
@@ -171,7 +175,7 @@ const AdminProducts = () => {
     setCurrentProduct(product);
     setFormData({
       nama: product.nama,
-      kategori_id: product.kategori_id || "",
+      kategori_id: getProductCategoryId(product),
       harga: product.harga.toString(),
       stok: product.stok ? product.stok.toString() : "0",
       img_url: product.img_url || "",
@@ -237,7 +241,7 @@ const AdminProducts = () => {
       return;
 
     try {
-      await deleteCategory(category.id);
+      await deleteCategory(category._id);
       await fetchCategories(); // Refresh daftar kategori
       alert("Kategori berhasil dihapus!");
     } catch (error) {
@@ -259,7 +263,7 @@ const AdminProducts = () => {
     }
 
     try {
-      await updateCategory(editingCategory.id, {
+      await updateCategory(editingCategory._id, {
         nama: editCategoryName.trim(),
       });
       await fetchCategories(); // Refresh daftar kategori
@@ -283,7 +287,7 @@ const AdminProducts = () => {
 
   // Helper function untuk mendapatkan nama kategori dari ID
   const getCategoryName = (kategoriId) => {
-    const category = categories.find((cat) => cat.id === kategoriId);
+    const category = categories.find((cat) => cat._id === kategoriId);
     return category ? category.nama : "Tidak ada kategori";
   };
 
@@ -380,7 +384,7 @@ const AdminProducts = () => {
               <div className="md:hidden">
                 <div className="divide-y divide-gray-200">
                   {filteredProducts.map((product) => (
-                    <div key={product.id} className="p-4 hover:bg-gray-50">
+                    <div key={product._id} className="p-4 hover:bg-gray-50">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <h3 className="text-sm font-medium text-gray-900 line-clamp-2">
@@ -391,7 +395,7 @@ const AdminProducts = () => {
                               Rp {product.harga.toLocaleString("id-ID")}
                             </span>
                             <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                              {getCategoryName(product.kategori_id)}
+                              {getCategoryName(getProductCategoryId(product))}
                             </span>
                           </div>
                           <div className="mt-2 flex items-center justify-between">
@@ -417,7 +421,7 @@ const AdminProducts = () => {
                                 <Edit2 size={16} />
                               </button>
                               <button
-                                onClick={() => handleDelete(product.id)}
+                                onClick={() => handleDelete(product._id)}
                                 className="text-red-600 hover:text-red-900 p-1"
                               >
                                 <Trash2 size={16} />
@@ -457,7 +461,7 @@ const AdminProducts = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredProducts.map((product) => (
-                    <tr key={product.id} className="hover:bg-gray-50">
+                    <tr key={product._id} className="hover:bg-gray-50">
                       <td className="px-4 md:px-6 py-4">
                         <div className="text-sm font-medium text-gray-900 line-clamp-2">
                           {product.nama}
@@ -465,7 +469,7 @@ const AdminProducts = () => {
                       </td>
                       <td className="px-4 md:px-6 py-4">
                         <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                          {getCategoryName(product.kategori_id)}
+                          {getCategoryName(getProductCategoryId(product))}
                         </span>
                       </td>
                       <td className="px-4 md:px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
@@ -494,7 +498,7 @@ const AdminProducts = () => {
                             <Edit2 size={16} />
                           </button>
                           <button
-                            onClick={() => handleDelete(product.id)}
+                            onClick={() => handleDelete(product._id)}
                             className="text-red-600 hover:text-red-900 p-1"
                           >
                             <Trash2 size={16} />
@@ -641,7 +645,7 @@ const AdminProducts = () => {
                 >
                   <option value="">Pilih Kategori</option>
                   {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
+                    <option key={category._id} value={category._id}>
                       {category.nama}
                     </option>
                   ))}
@@ -791,10 +795,10 @@ const AdminProducts = () => {
                 ) : (
                   categories.map((category) => (
                     <div
-                      key={category.id}
+                      key={category._id}
                       className="flex justify-between items-center p-3 border-b border-gray-200 last:border-b-0 hover:bg-gray-50"
                     >
-                      {editingCategory?.id === category.id ? (
+                      {editingCategory?._id === category._id ? (
                         <div className="flex-1 flex gap-2">
                           <input
                             type="text"
