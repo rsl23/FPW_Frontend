@@ -29,25 +29,23 @@ import {
   RefreshCw,
   CheckCircle,
 } from "lucide-react";
+import { createUser, getUserById } from "../apiService/userApi";
 
-// Helper: Check dan sync email verification status dari Firebase Auth ke Firestore
-// @param user - Firebase Auth user object
-// @returns Boolean - true jika sudah verified, false jika belum
+// Helper: Sync status verifikasi email ke MongoDB
 async function checkAndSyncEmailVerification(user) {
-  // Refresh data user dari Firebase Auth untuk get status terbaru
-  await user.reload();
+  await user.reload(); // Refresh status dari Firebase Auth
 
-  // Kalau sudah verifikasi di Firebase Auth, sync ke Firestore
   if (user.emailVerified) {
-    await updateDoc(doc(db, "users", user.uid), {
-      email_verified: true,
-    });
-    console.log("Firestore updated: email_verified = true");
-    return true;
-  } else {
-    console.log("User belum verifikasi email");
-    return false;
+    try {
+      // Update status di MongoDB via API
+      await updateUser(user.uid, { email_verified: true });
+      return true;
+    } catch (error) {
+      console.error("Gagal sinkronisasi ke MongoDB:", error);
+      return true; // Tetap kembalikan true karena di Firebase sudah verified
+    }
   }
+  return false;
 }
 
 // Helper: Kirim ulang email verifikasi ke user
@@ -106,7 +104,6 @@ function LoginForm() {
   // Validasi: email verified required untuk login
   const handleEmailLogin = async (e) => {
     e.preventDefault();
-
     if (!form.email || !form.password) {
       setError("Email dan password wajib diisi.");
       return;
@@ -123,43 +120,39 @@ function LoginForm() {
       );
       const user = userCredential.user;
 
-      // Dapatkan data user di Firestore
-      const userDocRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userDocRef);
-      const role = userDoc.exists() ? userDoc.data().role : "user";
+      // Ambil data user dari MongoDB
+      let userData;
+      try {
+        userData = await getUserById(user.uid);
+      } catch (err) {
+        setError("Profil user tidak ditemukan di database.");
+        await auth.signOut();
+        setLoading(false);
+        return;
+      }
 
-      // === ADMIN SKIP EMAIL VERIFICATION ===
+      const role = userData?.role || "customer";
+
+      // ADMIN bypass verifikasi email
       if (role === "admin") {
         navigate("/admin");
         return;
       }
 
-      // === USER BIASA WAJIB VERIFIKASI EMAIL ===
+      // USER biasa wajib cek verifikasi
       const isVerified = await checkAndSyncEmailVerification(user);
 
       if (!isVerified) {
-        // Tampilkan modal verifikasi & logout
         setCurrentUser(user);
         setShowVerificationModal(true);
         await auth.signOut();
         return;
       }
 
-      // Jika user biasa sudah terverifikasi → lanjut login
       navigate("/");
     } catch (err) {
       console.error("Error login:", err);
-      const errorCode = err.code;
-
-      if (errorCode === "auth/invalid-credential") {
-        setError("Email atau password salah.");
-      } else if (errorCode === "auth/too-many-requests") {
-        setError("Terlalu banyak percobaan login. Coba lagi nanti.");
-      } else if (errorCode === "auth/user-not-found") {
-        setError("Email tidak terdaftar.");
-      } else {
-        setError("Terjadi kesalahan. Silakan coba lagi.");
-      }
+      setError("Email atau password salah.");
     } finally {
       setLoading(false);
     }
@@ -192,32 +185,34 @@ function LoginForm() {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      const { isNewUser } = getAdditionalUserInfo(result);
 
-      const userDocRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userDocRef);
-
-      if (isNewUser || !userDoc.exists()) {
-        await setDoc(userDocRef, {
+      let userData;
+      try {
+        // Cek apakah user sudah ada di MongoDB
+        userData = await getUserById(user.uid);
+      } catch (err) {
+        // Jika tidak ada (404), buat user baru di MongoDB
+        const response = await createUser({
+          _id: user.uid,
           name: user.displayName,
           email: user.email,
           firebase_uid: user.uid,
           auth_provider: "google",
           email_verified: user.emailVerified,
-          createdAt: serverTimestamp(),
+          role: "customer",
         });
+        userData = response.data;
       }
 
-      // Google tidak perlu verifikasi email tambahan
-      const updatedUserDoc = await getDoc(userDocRef);
-      if (updatedUserDoc.exists() && updatedUserDoc.data().role === "admin") {
+      // Redirect berdasarkan role dari MongoDB
+      if (userData && userData.role === "admin") {
         navigate("/admin");
       } else {
         navigate("/");
       }
     } catch (err) {
-      console.error("Error login dengan Google:", err);
-      setError("Gagal login dengan Google. Silakan coba lagi.");
+      console.error("Error login Google:", err);
+      setError("Gagal login dengan Google.");
     } finally {
       setLoading(false);
     }

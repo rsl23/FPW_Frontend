@@ -30,6 +30,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { Mail, CheckCircle, AlertCircle, X, Shield, Star } from "lucide-react";
+import { createUser, getUserById } from "../apiService/userApi";
 
 // Reusable Input Field Component untuk form register
 function InputField({
@@ -108,35 +109,56 @@ function RegisterForm() {
       const user = result.user;
       const { isNewUser } = getAdditionalUserInfo(result);
 
-      // Cek apakah data user sudah ada di firestore
-      const userDocRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userDocRef);
-
-      if (isNewUser || !userDoc.exists()) {
-        // User baru - simpan ke Firestore
-        await setDoc(userDocRef, {
+      let userData;
+      try {
+        // Cek apakah user sudah ada di database MongoDB
+        userData = await getUserById(user.uid);
+      } catch (err) {
+        // Jika error 404 (user tidak ditemukan), maka buat user baru
+        userData = await createUser({
+          _id: user.uid, // Kita gunakan Firebase UID sebagai _id di MongoDB
           name: user.displayName,
           email: user.email,
           firebase_uid: user.uid,
           auth_provider: "google",
           email_verified: user.emailVerified,
-          createdAt: serverTimestamp(),
         });
-
-        // Google tidak perlu verifikasi email, langsung login
-        if (userDoc.exists() && userDoc.data().role === "admin") {
-          navigate("/admin");
-        } else {
-          navigate("/");
-        }
-      } else {
-        // User sudah pernah register - langsung login
-        if (userDoc.exists() && userDoc.data().role === "admin") {
-          navigate("/admin");
-        } else {
-          navigate("/");
-        }
+        // Jika createUser sukses, data akan ada di userData.data (berdasarkan backend Anda)
+        userData = userData.data;
       }
+
+      // Redirect berdasarkan role dari database
+      if (userData && userData.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
+
+      // if (isNewUser || !response.exists()) {
+      //   // User baru - simpan ke Firestore
+      //   await setDoc(userDocRef, {
+      //     name: user.displayName,
+      //     email: user.email,
+      //     firebase_uid: user.uid,
+      //     auth_provider: "google",
+      //     email_verified: user.emailVerified,
+      //     createdAt: serverTimestamp(),
+      //   });
+
+      //   // Google tidak perlu verifikasi email, langsung login
+      //   if (userDoc.exists() && userDoc.data().role === "admin") {
+      //     navigate("/admin");
+      //   } else {
+      //     navigate("/");
+      //   }
+      // } else {
+      //   // User sudah pernah register - langsung login
+      //   if (userDoc.exists() && userDoc.data().role === "admin") {
+      //     navigate("/admin");
+      //   } else {
+      //     navigate("/");
+      //   }
+      // }
     } catch (error) {
       console.error("Error saat registrasi dengan Google:", error);
       setError("Gagal mendaftar dengan Google. Silakan coba lagi.");
@@ -163,13 +185,7 @@ function RegisterForm() {
     setLoading(true);
 
     try {
-      const signInMethods = await fetchSignInMethodsForEmail(auth, email);
-      if (signInMethods.length > 0) {
-        setError("Email ini sudah terdaftar.");
-        setLoading(false);
-        return;
-      }
-
+      // 1. Create User di Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -177,27 +193,25 @@ function RegisterForm() {
       );
       const user = userCredential.user;
 
+      // 2. Update Display Name di Firebase
       await updateProfile(user, { displayName: name });
 
-      // Simpan data user ke Firestore dengan UID sebagai document ID
-      await setDoc(doc(db, "users", user.uid), {
-        name,
-        email,
+      // 3. Simpan ke Backend MongoDB lewat API
+      await createUser({
+        _id: user.uid, // Sangat disarankan agar _id MongoDB = Firebase UID
+        name: name,
+        email: email,
         firebase_uid: user.uid,
         auth_provider: "email/password",
-        email_verified: false, // Set false karena belum verifikasi
-        createdAt: serverTimestamp(),
+        email_verified: false,
+        role: "customer",
       });
 
-      // Kirim email verifikasi
+      // 4. Kirim Verifikasi Email
       await sendEmailVerification(user);
 
-      // Simpan email untuk ditampilkan di success message
       setRegisteredEmail(email);
-
-      // Logout user setelah register agar tidak auto-login
-      await signOut(auth);
-
+      await signOut(auth); // Paksa logout agar user harus verifikasi dulu
       setSuccess(true);
     } catch (err) {
       console.error("Error saat registrasi:", err);

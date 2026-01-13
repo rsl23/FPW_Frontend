@@ -22,6 +22,7 @@ import {
   User as UserIcon,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { deleteUser, getAllUsers, updateUser } from "../../apiService/userApi";
 
 // Confirmation Modal Component
 const ConfirmModal = ({
@@ -42,9 +43,13 @@ const ConfirmModal = ({
             className={type === "danger" ? "text-red-500" : "text-yellow-500"}
             size={20}
           />
-          <h3 className="text-lg sm:text-xl font-bold text-gray-900">{title}</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-gray-900">
+            {title}
+          </h3>
         </div>
-        <p className="text-sm sm:text-base text-gray-700 mb-4 sm:mb-6">{message}</p>
+        <p className="text-sm sm:text-base text-gray-700 mb-4 sm:mb-6">
+          {message}
+        </p>
         <div className="flex gap-2 sm:gap-3">
           <button
             onClick={onClose}
@@ -57,10 +62,11 @@ const ConfirmModal = ({
               onConfirm();
               onClose();
             }}
-            className={`flex-1 px-3 sm:px-4 py-2 rounded-lg font-semibold text-white transition-all text-sm sm:text-base ${type === "danger"
-              ? "bg-red-600 hover:bg-red-700"
-              : "bg-indigo-600 hover:bg-indigo-700"
-              }`}
+            className={`flex-1 px-3 sm:px-4 py-2 rounded-lg font-semibold text-white transition-all text-sm sm:text-base ${
+              type === "danger"
+                ? "bg-red-600 hover:bg-red-700"
+                : "bg-indigo-600 hover:bg-indigo-700"
+            }`}
           >
             Ya, Lanjutkan
           </button>
@@ -90,11 +96,7 @@ const AdminUsers = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const usersSnapshot = await getDocs(collection(db, "users"));
-      const usersData = usersSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const usersData = await getAllUsers();
       setUsers(usersData);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -107,24 +109,23 @@ const AdminUsers = () => {
   // Toggle user role antara 'user' dan 'admin'
   const handleToggleRole = async (userId, currentRole, userName) => {
     const newRole = currentRole === "admin" ? "user" : "admin";
+    console.log(userId);
 
     setConfirmModal({
       isOpen: true,
       title: `Ubah Role ${userName}`,
-      message: `Apakah Anda yakin ingin mengubah role ${userName} dari "${currentRole || "user"
-        }" menjadi "${newRole}"?`,
+      message: `Apakah Anda yakin ingin mengubah role ${userName} dari "${
+        currentRole || "user"
+      }" menjadi "${newRole}"?`,
       type: "warning",
       onConfirm: async () => {
         try {
-          const userRef = doc(db, "users", userId);
-          await updateDoc(userRef, {
-            role: newRole,
-          });
+          const userData = await updateUser(userId, { role: newRole });
 
           // Update local state
           setUsers((prevUsers) =>
             prevUsers.map((user) =>
-              user.id === userId ? { ...user, role: newRole } : user
+              user._id === userId ? { ...user, role: newRole } : user
             )
           );
 
@@ -146,12 +147,11 @@ const AdminUsers = () => {
       type: "danger",
       onConfirm: async () => {
         try {
-          const userRef = doc(db, "users", userId);
-          await deleteDoc(userRef);
+          await deleteUser(userId);
 
           // Update local state
           setUsers((prevUsers) =>
-            prevUsers.filter((user) => user.id !== userId)
+            prevUsers.filter((user) => user._id !== userId)
           );
 
           toast.success(`Akun ${userName} berhasil dihapus`);
@@ -212,7 +212,7 @@ const AdminUsers = () => {
               <div className="md:hidden">
                 <div className="divide-y divide-gray-200 px-3">
                   {filteredUsers.map((user) => (
-                    <div key={user.id} className="py-4 hover:bg-gray-50 p-2">
+                    <div key={user._id} className="py-4 hover:bg-gray-50 p-2">
                       <div className="flex items-start gap-3">
                         <div className="flex-shrink-0 h-10 w-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                           {user.name?.[0]?.toUpperCase() || "?"}
@@ -231,22 +231,29 @@ const AdminUsers = () => {
                               </div>
                               <div className="flex items-center gap-2 mt-2">
                                 <span
-                                  className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === "admin"
-                                    ? "bg-purple-100 text-purple-800"
-                                    : "bg-gray-100 text-gray-800"
-                                    }`}
+                                  className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                    user.role === "admin"
+                                      ? "bg-purple-100 text-purple-800"
+                                      : "bg-gray-100 text-gray-800"
+                                  }`}
                                 >
                                   {user.role || "user"}
                                 </span>
                                 <span className="text-xs text-gray-500 flex items-center gap-1">
                                   {user.email_verified ? (
                                     <>
-                                      <UserCheck size={12} className="text-green-500" />
+                                      <UserCheck
+                                        size={12}
+                                        className="text-green-500"
+                                      />
                                       <span>Verified</span>
                                     </>
                                   ) : (
                                     <>
-                                      <UserX size={12} className="text-red-500" />
+                                      <UserX
+                                        size={12}
+                                        className="text-red-500"
+                                      />
                                       <span>Unverified</span>
                                     </>
                                   )}
@@ -254,7 +261,10 @@ const AdminUsers = () => {
                               </div>
                               {user.createdAt && (
                                 <div className="flex items-center gap-1 mt-1">
-                                  <Calendar size={12} className="text-gray-400" />
+                                  <Calendar
+                                    size={12}
+                                    className="text-gray-400"
+                                  />
                                   <p className="text-xs text-gray-500">
                                     {new Date(
                                       user.createdAt.seconds * 1000
@@ -267,12 +277,17 @@ const AdminUsers = () => {
                               {/* Toggle Role Button */}
                               <button
                                 onClick={() =>
-                                  handleToggleRole(user.id, user.role, user.name)
+                                  handleToggleRole(
+                                    user._id,
+                                    user.role,
+                                    user.name
+                                  )
                                 }
-                                className={`p-1.5 rounded-lg transition-all ${user.role === "admin"
-                                  ? "bg-gray-100 hover:bg-gray-200 text-gray-700"
-                                  : "bg-purple-100 hover:bg-purple-200 text-purple-700"
-                                  }`}
+                                className={`p-1.5 rounded-lg transition-all ${
+                                  user.role === "admin"
+                                    ? "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                                    : "bg-purple-100 hover:bg-purple-200 text-purple-700"
+                                }`}
                                 title={
                                   user.role === "admin"
                                     ? "Ubah ke User"
@@ -285,7 +300,11 @@ const AdminUsers = () => {
                               {/* Delete Button */}
                               <button
                                 onClick={() =>
-                                  handleDeleteUser(user.id, user.name, user.email)
+                                  handleDeleteUser(
+                                    user._id,
+                                    user.name,
+                                    user.email
+                                  )
                                 }
                                 className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-all"
                                 title="Hapus User"
@@ -350,10 +369,11 @@ const AdminUsers = () => {
                       </td>
                       <td className="px-4 md:px-6 py-3 md:py-4">
                         <span
-                          className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === "admin"
-                            ? "bg-purple-100 text-purple-800"
-                            : "bg-gray-100 text-gray-800"
-                            }`}
+                          className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            user.role === "admin"
+                              ? "bg-purple-100 text-purple-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
                         >
                           {user.role || "user"}
                         </span>
@@ -371,8 +391,8 @@ const AdminUsers = () => {
                       <td className="px-4 md:px-6 py-3 md:py-4 text-sm text-gray-500">
                         {user.createdAt
                           ? new Date(
-                            user.createdAt.seconds * 1000
-                          ).toLocaleDateString("id-ID")
+                              user.createdAt.seconds * 1000
+                            ).toLocaleDateString("id-ID")
                           : "N/A"}
                       </td>
                       <td className="px-4 md:px-6 py-3 md:py-4">
@@ -380,12 +400,13 @@ const AdminUsers = () => {
                           {/* Toggle Role Button */}
                           <button
                             onClick={() =>
-                              handleToggleRole(user.id, user.role, user.name)
+                              handleToggleRole(user._id, user.role, user.name)
                             }
-                            className={`p-1.5 md:p-2 rounded-lg transition-all ${user.role === "admin"
-                              ? "bg-gray-100 hover:bg-gray-200 text-gray-700"
-                              : "bg-purple-100 hover:bg-purple-200 text-purple-700"
-                              }`}
+                            className={`p-1.5 md:p-2 rounded-lg transition-all ${
+                              user.role === "admin"
+                                ? "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                                : "bg-purple-100 hover:bg-purple-200 text-purple-700"
+                            }`}
                             title={
                               user.role === "admin"
                                 ? "Ubah ke User"
@@ -398,7 +419,7 @@ const AdminUsers = () => {
                           {/* Delete Button */}
                           <button
                             onClick={() =>
-                              handleDeleteUser(user.id, user.name, user.email)
+                              handleDeleteUser(user._id, user.name, user.email)
                             }
                             className="p-1.5 md:p-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-all"
                             title="Hapus User"
