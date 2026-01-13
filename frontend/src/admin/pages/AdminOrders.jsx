@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { db } from "../../firebase/config";
-import { collection, onSnapshot, updateDoc, doc } from "firebase/firestore";
 import {
   CheckCircle,
   XCircle,
@@ -11,6 +9,15 @@ import {
   Search,
 } from "lucide-react";
 
+import {
+  getAllOrders,
+  updateOrderStatus,
+  confirmStock,
+  returnStock,
+} from "../../apiService/orderApi";
+
+import { getAllUsers } from "../../apiService/userApi";
+
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,158 +26,75 @@ const AdminOrders = () => {
   const [users, setUsers] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
 
-  useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, "orders"), (snapshot) => {
-      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-
-      // Urutkan dari yang terbaru ke terlama berdasarkan createdAt
-      const sortedData = data.sort((a, b) => {
-        const dateA = a.createdAt?.toDate
-          ? a.createdAt.toDate()
-          : new Date(a.createdAt);
-        const dateB = b.createdAt?.toDate
-          ? b.createdAt.toDate()
-          : new Date(b.createdAt);
-        return dateB - dateA; // Terbaru ke terlama
-      });
-
-      setOrders(sortedData);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, "users"), (snapshot) => {
-      const data = {};
-      snapshot.forEach((doc) => {
-        data[doc.id] = doc.data();
-      });
-      setUsers(data);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  // Fungsi untuk format tanggal
-  const formatDate = (timestamp) => {
-    if (!timestamp) return "-";
-
+  const fetchOrders = async () => {
     try {
-      let date;
-
-      if (timestamp._seconds !== undefined) {
-        date = new Date(
-          timestamp._seconds * 1000 + (timestamp._nanoseconds || 0) / 1000000
-        );
-      } else if (timestamp.seconds !== undefined) {
-        date = new Date(
-          timestamp.seconds * 1000 + (timestamp.nanoseconds || 0) / 1000000
-        );
-      } else if (timestamp.toDate && typeof timestamp.toDate === "function") {
-        date = timestamp.toDate();
-      } else {
-        date = new Date(timestamp);
-      }
-
-      if (isNaN(date.getTime())) {
-        return "Tanggal tidak valid";
-      }
-
-      return date.toLocaleDateString("id-ID", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } catch (error) {
-      console.error("Error formatting date:", error);
-      return "Tanggal tidak valid";
+      setLoading(true);
+      const data = await getAllOrders(); // <-- API MongoDB
+      setOrders(data);
+    } catch (err) {
+      console.error("Gagal fetch orders:", err);
+    } finally {
+      setLoading(false);
     }
   };
+
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const data = await getAllUsers(); // API MongoDB
+        setUsers(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+
+  // Fungsi untuk format tanggal
+  const formatDate = (date) => {
+    if (!date) return "-";
+    const d = new Date(date);
+    return d.toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
 
   // AdminOrders.jsx - Update handleStatusChange
   const handleStatusChange = async (orderId, status) => {
     try {
       setProcessingOrder(orderId);
 
-      console.log(`🔄 Changing order ${orderId} status to: ${status}`);
+      await updateOrderStatus(orderId, status);
 
-      // Update status order di Firebase
-      await updateDoc(doc(db, "orders", orderId), { status });
-      console.log(`✅ Order status updated to: ${status}`);
+      if (status === "accepted") await confirmStock(orderId);
+      else if (status === "rejected") await returnStock(orderId);
 
-      // Handle stok berdasarkan status
-      if (status === "accepted") {
-        // Konfirmasi stok - stok tetap berkurang
-        console.log(`🔒 Confirming stock for order ${orderId}`);
-        const confirmResponse = await fetch(
-          `${
-            import.meta.env.VITE_API_BASE_URL
-          }/orders/${orderId}/confirm-stock`,
-          {
-            method: "POST",
-          }
-        );
-
-        const confirmResult = await confirmResponse.json();
-        console.log(`📨 Confirm stock response:`, confirmResult);
-
-        if (!confirmResponse.ok) {
-          throw new Error(confirmResult.error || "Gagal mengonfirmasi stok");
-        }
-
-        console.log(`✅ Stock confirmed for order ${orderId}`);
-      } else if (status === "rejected") {
-        // Kembalikan stok - stok dikembalikan
-        console.log(`🔄 Returning stock for order ${orderId}`);
-        const returnResponse = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/orders/${orderId}/return-stock`,
-          {
-            method: "POST",
-          }
-        );
-
-        const returnResult = await returnResponse.json();
-        console.log(`📨 Return stock response:`, returnResult);
-
-        if (!returnResponse.ok) {
-          // Jika return stock gagal, kita masih bisa update status order tapi beri warning
-          console.warn(
-            `⚠️ Stock return failed but order status updated:`,
-            returnResult
-          );
-          alert(
-            `Status order berhasil diubah ke Ditolak, tetapi ada masalah mengembalikan stok: ${returnResult.error}`
-          );
-        } else {
-          console.log(`✅ Stock returned for order ${orderId}`);
-        }
-      }
+      // update state orders lokal supaya UI langsung berubah
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order._id === orderId ? { ...order, status } : order
+        )
+      );
     } catch (err) {
-      console.error("❌ Gagal update status:", err);
-
-      let errorMessage = "Gagal mengupdate status order: ";
-      if (err.message.includes("Gagal mengonfirmasi stok")) {
-        errorMessage += "Stok tidak dapat dikonfirmasi. ";
-      } else if (err.message.includes("Gagal mengembalikan stok")) {
-        errorMessage += "Stok tidak dapat dikembalikan. ";
-      }
-      errorMessage += err.message;
-
-      alert(errorMessage);
-
-      // Refresh data untuk memastikan sync
-      const orderDoc = await doc(db, "orders", orderId).get();
-      if (orderDoc.exists) {
-        const currentStatus = orderDoc.data().status;
-        console.log(`🔄 Current order status after error: ${currentStatus}`);
-      }
+      console.error("❌ Gagal update status:", err.message);
+      alert("Gagal update status: " + err.message);
     } finally {
       setProcessingOrder(null);
     }
   };
+
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -208,7 +132,7 @@ const AdminOrders = () => {
   if (searchTerm.trim()) {
     filteredOrders = filteredOrders.filter((order) => {
       const searchAll = searchTerm.toLowerCase();
-      const orderIdmatch = order.id.toLowerCase().includes(searchAll);
+      const orderIdmatch = order._id.toLowerCase().includes(searchAll);
       const userNameMatch = users[order.userId]?.name
         ?.toLowerCase()
         .includes(searchAll);
@@ -266,20 +190,19 @@ const AdminOrders = () => {
             <button
               key={status}
               onClick={() => setSelectedStatus(status)}
-              className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-medium transition-all flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${
-                selectedStatus === status
-                  ? "bg-indigo-600 text-white shadow-lg"
-                  : "bg-white text-gray-700 hover:bg-gray-50 shadow-sm"
-              }`}
+              className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-medium transition-all flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${selectedStatus === status
+                ? "bg-indigo-600 text-white shadow-lg"
+                : "bg-white text-gray-700 hover:bg-gray-50 shadow-sm"
+                }`}
             >
               {getStatusIcon(status)}
               {status === "all"
                 ? "Semua"
                 : status === "pending"
-                ? "Menunggu"
-                : status === "accepted"
-                ? "Diterima"
-                : "Ditolak"}
+                  ? "Menunggu"
+                  : status === "accepted"
+                    ? "Diterima"
+                    : "Ditolak"}
             </button>
           ))}
         </div>
@@ -303,16 +226,15 @@ const AdminOrders = () => {
             <p className="text-xs sm:text-sm md:text-base text-gray-500 px-4">
               {selectedStatus === "all"
                 ? "Pesanan dari pelanggan akan muncul di sini"
-                : `Tidak ada pesanan dengan status ${
-                    selectedStatus === "pending" ? "menunggu" : selectedStatus
-                  }`}
+                : `Tidak ada pesanan dengan status ${selectedStatus === "pending" ? "menunggu" : selectedStatus
+                }`}
             </p>
           </div>
         ) : (
           <div className="grid gap-3 sm:gap-4 md:gap-6">
             {filteredOrders.map((order) => (
               <div
-                key={order.id}
+                key={order._id}
                 className="bg-white rounded-xl md:rounded-2xl shadow-sm md:shadow-lg hover:shadow-lg md:hover:shadow-xl transition-all duration-300 overflow-hidden"
               >
                 {/* Order Header */}
@@ -329,11 +251,11 @@ const AdminOrders = () => {
                           {order.status === "pending"
                             ? "Menunggu Konfirmasi"
                             : order.status === "accepted"
-                            ? "Pesanan Diterima"
-                            : "Pesanan Ditolak"}
+                              ? "Pesanan Diterima"
+                              : "Pesanan Ditolak"}
                         </span>
                         <span className="text-xs text-gray-500 font-mono">
-                          #{order.id}
+                          #{order._id}
                         </span>
                         <span className="text-xs text-gray-500">
                           {formatDate(order.createdAt)}
@@ -368,41 +290,39 @@ const AdminOrders = () => {
                         <>
                           <button
                             onClick={() =>
-                              handleStatusChange(order.id, "accepted")
+                              handleStatusChange(order._id, "accepted")
                             }
-                            disabled={processingOrder === order.id}
-                            className={`flex items-center justify-center gap-1 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transition-all shadow-sm hover:shadow-md text-xs sm:text-sm w-full sm:w-auto ${
-                              processingOrder === order.id
-                                ? "bg-gray-400 text-white cursor-not-allowed"
-                                : "bg-green-500 text-white hover:bg-green-600"
-                            }`}
+                            disabled={processingOrder === order._id}
+                            className={`flex items-center justify-center gap-1 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transition-all shadow-sm hover:shadow-md text-xs sm:text-sm w-full sm:w-auto ${processingOrder === order._id
+                              ? "bg-gray-400 text-white cursor-not-allowed"
+                              : "bg-green-500 text-white hover:bg-green-600"
+                              }`}
                           >
-                            {processingOrder === order.id ? (
+                            {processingOrder === order._id ? (
                               <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white"></div>
                             ) : (
                               <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                             )}
-                            {processingOrder === order.id
+                            {processingOrder === order._id
                               ? "Memproses..."
                               : "Terima"}
                           </button>
                           <button
                             onClick={() =>
-                              handleStatusChange(order.id, "rejected")
+                              handleStatusChange(order._id, "rejected")
                             }
-                            disabled={processingOrder === order.id}
-                            className={`flex items-center justify-center gap-1 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transition-all shadow-sm hover:shadow-md text-xs sm:text-sm w-full sm:w-auto ${
-                              processingOrder === order.id
-                                ? "bg-gray-400 text-white cursor-not-allowed"
-                                : "bg-red-500 text-white hover:bg-red-600"
-                            }`}
+                            disabled={processingOrder === order._id}
+                            className={`flex items-center justify-center gap-1 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transition-all shadow-sm hover:shadow-md text-xs sm:text-sm w-full sm:w-auto ${processingOrder === order._id
+                              ? "bg-gray-400 text-white cursor-not-allowed"
+                              : "bg-red-500 text-white hover:bg-red-600"
+                              }`}
                           >
-                            {processingOrder === order.id ? (
+                            {processingOrder === order._id ? (
                               <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white"></div>
                             ) : (
                               <XCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                             )}
-                            {processingOrder === order.id
+                            {processingOrder === order._id
                               ? "Memproses..."
                               : "Tolak"}
                           </button>
@@ -410,11 +330,10 @@ const AdminOrders = () => {
                       ) : (
                         // Untuk status accepted atau rejected, tampilkan indikator saja
                         <div
-                          className={`flex items-center gap-1 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border text-xs sm:text-sm ${
-                            order.status === "accepted"
-                              ? "bg-green-100 text-green-700 border-green-200"
-                              : "bg-red-100 text-red-700 border-red-200"
-                          }`}
+                          className={`flex items-center gap-1 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border text-xs sm:text-sm ${order.status === "accepted"
+                            ? "bg-green-100 text-green-700 border-green-200"
+                            : "bg-red-100 text-red-700 border-red-200"
+                            }`}
                         >
                           {getStatusIcon(order.status)}
                           {order.status === "accepted"

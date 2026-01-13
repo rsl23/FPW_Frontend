@@ -81,7 +81,7 @@ const ProductDetail = () => {
   // Redirect ke login jika user belum login
   const handleAddToCart = async () => {
     try {
-      await addToCart(product.id, 1); // Add 1 qty ke cart
+      await addToCart(product._id, 1); // Add 1 qty ke cart
       toast.success("Berhasil menambahkan ke keranjang!", {
         duration: 3000,
         position: "top-center",
@@ -452,8 +452,8 @@ const ProductDetail = () => {
                 onClick={handleAddToCart}
                 disabled={product.stok === 0}
                 className={`w-full px-4 py-3 md:px-8 md:py-4 rounded-xl md:rounded-2xl font-semibold text-white transition-all duration-300 flex items-center justify-center gap-2 md:gap-3 text-base md:text-lg ${product.stok === 0
-                    ? "bg-gray-600 cursor-not-allowed opacity-50"
-                    : "bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 hover:shadow-xl md:hover:shadow-2xl hover:scale-[1.02] md:hover:scale-105"
+                  ? "bg-gray-600 cursor-not-allowed opacity-50"
+                  : "bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 hover:shadow-xl md:hover:shadow-2xl hover:scale-[1.02] md:hover:scale-105"
                   }`}
               >
                 <ShoppingCart size={20} />
@@ -598,8 +598,8 @@ const ProductDetail = () => {
                             setFilterDropdownOpen(false);
                           }}
                           className={`w-full text-left px-2 py-1.5 md:px-3 md:py-2 rounded text-xs md:text-sm transition-colors ${ratingFilter === "all"
-                              ? "bg-indigo-600 text-white"
-                              : "text-gray-300 hover:bg-white/10"
+                            ? "bg-indigo-600 text-white"
+                            : "text-gray-300 hover:bg-white/10"
                             }`}
                         >
                           Semua Rating ({totalReviews})
@@ -612,8 +612,8 @@ const ProductDetail = () => {
                               setFilterDropdownOpen(false);
                             }}
                             className={`w-full text-left px-2 py-1.5 md:px-3 md:py-2 rounded text-xs md:text-sm transition-colors flex items-center justify-between ${ratingFilter === rating.toString()
-                                ? "bg-indigo-600 text-white"
-                                : "text-gray-300 hover:bg-white/10"
+                              ? "bg-indigo-600 text-white"
+                              : "text-gray-300 hover:bg-white/10"
                               }`}
                           >
                             <div className="flex items-center gap-1 md:gap-2">
