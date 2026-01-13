@@ -20,6 +20,10 @@ export const addToCart = async (produk_id, jumlah = 1) => {
     throw new Error("User belum login");
   }
 
+  console.log(produk_id);
+  console.log(jumlah);
+  console.log("User id", user.uid);
+
   const res = await fetch(API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -48,6 +52,8 @@ export const getCart = async () => {
   }
 
   const res = await fetch(`${API_URL}?userId=${user.uid}`);
+  console.log(res);
+
   if (!res.ok) throw new Error("Gagal mengambil data keranjang");
   return res.json(); // Return array cart items dengan produk data
 };
